@@ -1,2 +1,2 @@
-# ToDoProject
-'To Do' Project for Semester 2
+# GoodEats
+Restaurant reviewer project for Semester 2
