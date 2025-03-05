@@ -20,4 +20,5 @@ public class Restaurant {
     private String link;
     private String storePhoto;
     private String review;
+    private List<Review> reviews;
 }
