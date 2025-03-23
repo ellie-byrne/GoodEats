@@ -22,19 +22,22 @@ public class RestaurantController {
     @GetMapping("/restaurants")
     public ResponseEntity<List<Restaurant>> getAllRestaurants() {
         try {
-            logger.info("Attempting to fetch restaurants from 'GoodEats' collection");
+            logger.info("Attempting to fetch restaurants from 'restaurants' collection");
             List<Restaurant> restaurants = restaurantRepository.findAll();
 
             logger.info("Query complete. Found {} restaurants", restaurants.size());
 
-            if (!restaurants.isEmpty()) {
-                Restaurant first = restaurants.get(0);
-                logger.info("First restaurant: id={}, name={}, type={}, storePhoto={}",
-                        first.getId() != null ? first.getId() : "null",
-                        first.getName() != null ? first.getName() : "null",
-                        first.getType() != null ? first.getType() : "null",
-                        first.getStorePhoto() != null ? first.getStorePhoto() : "null");
+            if (restaurants.isEmpty()) {
+                logger.warn("No restaurants found in the database");
+                return new ResponseEntity<>(restaurants, HttpStatus.OK);
             }
+
+            Restaurant first = restaurants.get(0);
+            logger.info("First restaurant: id={}, Borough={}, Name={}, Category={}",
+                    first.getId() != null ? first.getId() : "null",
+                    first.getBorough() != null ? first.getBorough() : "null",
+                    first.getName() != null ? first.getName() : "null",
+                    first.getCategory() != null ? first.getCategory() : "null");
 
             return new ResponseEntity<>(restaurants, HttpStatus.OK);
         } catch (Exception e) {
