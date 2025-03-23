@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document(collection = "restaurants")
+@Document(collection = "CSV data")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
