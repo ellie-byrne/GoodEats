@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return response.json();
         })
         .then(restaurants => {
+            console.log('Restuarants data:', restaurants);
             displayRestaurants(restaurants);
         })
         .catch(error => {
@@ -29,12 +30,13 @@ function displayRestaurants(restaurants) {
 
     // Create a card for each restaurant
     restaurants.forEach(restaurant => {
-        if (!restaurant.name) return;
+        if (!restaurant.Name) return;
 
         const card = document.createElement('div');
         card.className = 'restaurant-card';
-        const name = restaurant.name || 'Unnamed Restaurant';
-        const type = restaurant.type || 'Restaurant';
+        const name = restaurant.Name || 'Unnamed Restaurant';
+        const type = restaurant.Category || 'Restaurant';
+        const borough = restaurant.Borough || 'London';
         const imageUrl = restaurant.storePhoto || 'https://via.placeholder.com/300x200?text=GoodEats';
 
         let reviewText = 'No review available';
