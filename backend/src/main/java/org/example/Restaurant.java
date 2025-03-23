@@ -6,6 +6,8 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @Document(collection = "restaurants")
 @Data
 @AllArgsConstructor
@@ -14,9 +16,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Restaurant {
     @Id
     @JsonSerialize(using = ObjectIdSerializer.class)
-    private ObjectId id; // Changed from _id
-    private String name;
-    private String type;
+    private ObjectId id;
+
+    private String Borough;
+    private String Name;
+    private String Category;
+
+    //for future use
     private String link;
     private String storePhoto;
     private String review;
