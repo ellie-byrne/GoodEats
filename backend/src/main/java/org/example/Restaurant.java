@@ -5,10 +5,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document(collection = "restaurants") // changed collection name
+@Document(collection = "GoodEats")
 public class Restaurant {
     @Id
     private Object id;
+
+    private String name;
+    private String type;
 
     private String Borough;
     private String Name;
@@ -22,19 +25,18 @@ public class Restaurant {
 
     public Restaurant() {}
 
-    public Restaurant(Object id, String Name, String Category, String Borough, String storePhoto,
+    public Restaurant(Object id, String name, String type, String storePhoto,
                       String link, String review, List<Review> reviews) {
         this.id = id;
-        this.Name = Name;
-        this.Category = Category;
-        this.Borough = Borough;
+        this.name = name;
+        this.type = type;
         this.storePhoto = storePhoto;
         this.link = link;
         this.review = review;
         this.reviews = reviews;
     }
 
-    // Explicit getters and setters
+    // Explicit getters and setters because Lombok was throwing a tantrum, may fix later.
     public Object getId() {
         return id;
     }
@@ -44,27 +46,19 @@ public class Restaurant {
     }
 
     public String getName() {
-        return Name;
+        return name;
     }
 
     public void setName(String name) {
-        this.Name = name;
+        this.name = name;
     }
 
-    public String getCategory() {
-        return Category;
+    public String getType() {
+        return type;
     }
 
-    public void setCategory(String Category) {
-        this.Category = Category;
-    }
-
-    public String getBorough() {
-        return Borough;
-    }
-
-    public void setBorough(String borough) {
-        Borough = borough;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getStorePhoto() {
