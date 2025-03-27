@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="goodeats@cluster0.tp763.mongodb.net">
+  <database-model serializer="dbm" dbms="MONGO" family-id="MONGO" format-version="4.53">
+    <root id="1">
+      <ServerVersion>8.0.6</ServerVersion>
+    </root>
+    <schema id="2" parent="1" name="GoodEats"/>
+    <schema id="3" parent="1" name="London"/>
+    <schema id="4" parent="1" name="admin"/>
+    <schema id="5" parent="1" name="local"/>
+  </database-model>
+</dataSource>
