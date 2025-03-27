@@ -1,14 +1,17 @@
 package org.example;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document(collection = "restaurants") // changed collection name
+@Document(collection = "restaurants")
 public class Restaurant {
     @Id
-    private Object id;
+    @JsonSerialize(using = ObjectIdSerializer.class)
+    private ObjectId id;
 
     private String Borough;
     private String Name;
@@ -22,7 +25,7 @@ public class Restaurant {
 
     public Restaurant() {}
 
-    public Restaurant(Object id, String Name, String Category, String Borough, String storePhoto,
+    public Restaurant(ObjectId id, String Name, String Category, String Borough, String storePhoto,
                       String link, String review, List<Review> reviews) {
         this.id = id;
         this.Name = Name;
@@ -34,12 +37,12 @@ public class Restaurant {
         this.reviews = reviews;
     }
 
-    // Explicit getters and setters
-    public Object getId() {
+    // Getters and setters
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
