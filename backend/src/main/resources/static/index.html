@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Good Eats</title>
+    <title>GoodEats - London Restaurants</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-    <h1>Good Eats</h1>
-    <p>Your favorite restaurants at a glance</p>
+    <h1>GoodEats</h1>
+    <p>Discover the Best Restaurants in London!</p>
 </header>
-<div class="container">
-    <main>
-        <section id="restaurant-list">
-            <h2>Current Restaurants</h2>
-            <div class="restaurants-grid" id="restaurants"></div>
-            <div class="loading" id="loading">Loading restaurants...</div>
-            <div class="error" id="error" style="display: none;">Error fetching restaurants. Please try again later.</div>
-            <div class="no-results" id="no-results" style="display: none;">No restaurants found.</div>
-        </section>
-    </main>
-</div>
+
+<main>
+    <div class="container">
+        <div id="restaurants-container" class="restaurants-grid">
+            <div class ="loading"> Loading restaurants...</div>
+        </div>
+    </div>
+</main>
+
 <footer>
-    <p>&copy; 2023 Good Eats. All rights reserved.</p>
+    <p>&copy; 2025 GoodEats</p>
 </footer>
+
 <script src="app.js"></script>
 </body>
 </html>
