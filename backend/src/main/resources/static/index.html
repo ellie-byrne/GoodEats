@@ -10,12 +10,49 @@
 <header>
     <h1>GoodEats</h1>
     <p>Discover the Best Restaurants in London!</p>
+    <nav>
+        <ul>
+            <li><a href="#" class="active" id="home-link">Home</a></li>
+            <li><a href="#" id="add-restaurant-link">Add Restaurant</a></li>
+        </ul>
+    </nav>
 </header>
 
 <main>
     <div class="container">
-        <div id="restaurants-container" class="restaurants-grid">
-            <div class ="loading"> Loading restaurants...</div>
+        <!-- Home Page Content -->
+        <div id="home-content">
+            <div id="restaurants-container" class="restaurants-grid">
+                <div class="loading"> Loading restaurants...</div>
+            </div>
+        </div>
+
+        <!-- Add Restaurant Form -->
+        <div id="add-restaurant-content" class="hidden">
+            <h2>Add a New Restaurant</h2>
+            <form id="add-restaurant-form">
+                <div class="form-group">
+                    <label for="restaurant-name">Restaurant Name</label>
+                    <input type="text" id="restaurant-name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="restaurant-category">Category</label>
+                    <input type="text" id="restaurant-category" name="category" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="restaurant-borough">Borough</label>
+                    <input type="text" id="restaurant-borough" name="borough" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="restaurant-link">Website Link (Optional)</label>
+                    <input type="url" id="restaurant-link" name="link">
+                </div>
+
+                <button type="submit" class="submit-btn">Add Restaurant</button>
+            </form>
         </div>
     </div>
 </main>
@@ -27,3 +64,4 @@
 <script src="app.js"></script>
 </body>
 </html>
+
