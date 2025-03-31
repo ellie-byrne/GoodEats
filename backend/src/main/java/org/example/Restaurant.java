@@ -13,9 +13,9 @@ public class Restaurant {
     private String name;
     private String type;
 
-    private String Borough;
-    private String Name;
-    private String Category;
+//    private String Borough;
+//    private String Name;
+//    private String Category;
 
     //for future use
     private String storePhoto;
