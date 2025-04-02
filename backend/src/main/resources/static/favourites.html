@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoodEats - My favourites</title>
+    <title>GoodEats - Your Favourites</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
     <h1>GoodEats</h1>
-    <p>Your favourite London Restaurants</p>
+    <p>Your Favourite London Restaurants</p>
+
+    <div class="theme-toggle">
+        <label class="switch">
+            <input type="checkbox" id="dark-mode-toggle">
+            <span class="slider round"></span>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
 
     <nav class="tabs">
         <ul>
-            <li class="active"><a href="index.html">Restaurants</a></li>
-            <li><a href="favourites.html">favourites</a></li>
+            <li><a href="index.html">Restaurants</a></li>
+            <li class="active"><a href="favourites.html">Favourites</a></li>
         </ul>
     </nav>
 </header>
@@ -23,7 +31,7 @@
     <div class="container">
         <div id="favourites-container">
             <div class="no-favourites">
-                <h2>Your favourites</h2>
+                <h2>Your Favourites</h2>
                 <p>You haven't added any favourite restaurants yet.</p>
                 <a href="index.html" class="button">Browse Restaurants</a>
             </div>
@@ -35,10 +43,7 @@
     <p>&copy; 2025 GoodEats</p>
 </footer>
 
-<script src="error-generator.js"></script>
 <script src="favourites.js"></script>
 </body>
 </html>
-
-
 

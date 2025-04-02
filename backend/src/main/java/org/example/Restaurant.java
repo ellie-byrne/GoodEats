@@ -12,12 +12,8 @@ public class Restaurant {
 
     private String name;
     private String type;
-
-//    private String Borough;
-//    private String Name;
-//    private String Category;
-
-    //for future use
+    private String borough;
+    private String category;
     private String storePhoto;
     private String link;
     private String review;
@@ -25,18 +21,20 @@ public class Restaurant {
 
     public Restaurant() {}
 
-    public Restaurant(Object id, String name, String type, String storePhoto,
+    public Restaurant(Object id, String name, String type, String borough,
+                      String category, String storePhoto,
                       String link, String review, List<Review> reviews) {
         this.id = id;
         this.name = name;
         this.type = type;
+        this.borough = borough;
+        this.category = category;
         this.storePhoto = storePhoto;
         this.link = link;
         this.review = review;
         this.reviews = reviews;
     }
 
-    // Explicit getters and setters because Lombok was throwing a tantrum, may fix later.
     public Object getId() {
         return id;
     }
@@ -59,6 +57,22 @@ public class Restaurant {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getBorough() {
+        return borough;
+    }
+
+    public void setBorough(String borough) {
+        this.borough = borough;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getStorePhoto() {
