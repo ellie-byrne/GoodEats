@@ -12,7 +12,7 @@ public class Restaurant {
 
     private String name;
     private String type;
-    private String borough;
+    private String Borough;
     private String category;
     private String storePhoto;
     private String link;
@@ -21,13 +21,13 @@ public class Restaurant {
 
     public Restaurant() {}
 
-    public Restaurant(Object id, String name, String type, String borough,
+    public Restaurant(Object id, String name, String type, String Borough,
                       String category, String storePhoto,
                       String link, String review, List<Review> reviews) {
         this.id = id;
         this.name = name;
         this.type = type;
-        this.borough = borough;
+        this.Borough = Borough;
         this.category = category;
         this.storePhoto = storePhoto;
         this.link = link;
@@ -60,11 +60,11 @@ public class Restaurant {
     }
 
     public String getBorough() {
-        return borough;
+        return Borough;
     }
 
-    public void setBorough(String borough) {
-        this.borough = borough;
+    public void setBorough(String Borough) {
+        this.Borough = Borough;
     }
 
     public String getCategory() {

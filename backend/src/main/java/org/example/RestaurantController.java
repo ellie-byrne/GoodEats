@@ -31,7 +31,7 @@ public class RestaurantController {
 
             if (!restaurants.isEmpty()) {
                 Restaurant first = restaurants.get(0);
-                logger.info("First restaurant: id={}, name={}, type={}, storePhoto={}",
+                logger.info("First restaurant: id={}, name={}, type={}, borough={}, storePhoto={}",
                         first.getId() != null ? first.getId() : "null",
                         first.getName() != null ? first.getName() : "null",
                         first.getType() != null ? first.getType() : "null",
