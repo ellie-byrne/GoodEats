@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodEats - Your Favourites</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <h1>GoodEats</h1>
+    <p>Your Favourite London Restaurants</p>
+
+    <div class="theme-toggle">
+        <label class="switch">
+            <input type="checkbox" id="dark-mode-toggle">
+            <span class="slider round"></span>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+
+    <nav class="tabs">
+        <ul>
+            <li><a href="index.html">Restaurants</a></li>
+            <li class="active"><a href="favourites.html">Favourites</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <div class="container">
+        <div id="favourites-container">
+            <div class="no-favourites">
+                <h2>Your Favourites</h2>
+                <p>You haven't added any favourite restaurants yet.</p>
+                <a href="index.html" class="button">Browse Restaurants</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 GoodEats</p>
+</footer>
+
+<script src="favourites.js"></script>
+</body>
+</html>
+

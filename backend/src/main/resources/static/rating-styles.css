@@ -1,0 +1,41 @@
+.restaurant-rating {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.stars {
+    display: flex;
+    margin-right: 0.5rem;
+}
+
+.star {
+    color: #ddd;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.star.active {
+    color: #ffcc00;
+}
+
+.star:hover,
+.star:hover ~ .star {
+    color: #ffcc00;
+}
+
+.stars:hover .star {
+    color: #ffcc00;
+}
+
+.stars .star:hover ~ .star {
+    color: #ddd;
+}
+
+.rating-count {
+    font-size: 0.85rem;
+    color: #666;
+}
+
