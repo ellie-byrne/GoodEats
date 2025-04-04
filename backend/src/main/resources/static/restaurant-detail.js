@@ -2,6 +2,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const restaurantDetailContainer = document.getElementById("restaurant-detail-container");
     const restaurantDetailTab = document.getElementById("restaurant-detail-tab");
 
+    setupDarkMode()
+
+    // DARK MODE FUNCTIONALITY
+    function setupDarkMode() {
+        const darkModeToggle = document.getElementById("dark-mode-toggle");
+        const darkModeEnabled = localStorage.getItem("darkModeEnabled") === "true"
+
+        if (darkModeEnabled) {
+            document.body.classList.add("dark-mode")
+            darkModeToggle.checked = true
+        }
+
+        darkModeToggle.addEventListener("change", () => {
+            if (darkModeToggle.checked) {
+                document.body.classList.add("dark-mode")
+                localStorage.setItem("darkModeEnabled", "true")
+            } else {
+                document.body.classList.remove("dark-mode")
+                localStorage.setItem("darkModeEnabled", "false")
+            }
+        })
+    }
+
     // Extract restaurant ID from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const restaurantId = urlParams.get("id");
@@ -35,6 +58,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 restaurant.storePhoto ||
                 "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
 
+            document.title = `GoodEats - ${name}`;
+
             restaurantDetailContainer.innerHTML = `
                 <img src="${imageUrl}" alt="${name}" onerror="this.src='https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg'">
                 <h2>${name}</h2>
@@ -42,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p>Borough: ${borough}</p>
                 ${restaurant.link ? `<p><a href="${restaurant.link}" target="_blank">Visit Website</a></p>` : ""}
                 `;
-            restaurantDetailTab.textContent = name; // Set the tab text correctly
+            restaurantDetailTab.innerHTML = `<a href="#">${name}</a>`;
         })
         .catch((error) => {
             console.error("Error fetching restaurant details:", error);

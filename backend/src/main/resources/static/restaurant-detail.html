@@ -3,36 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Details</title>
+    <title>GoodEats - Restaurant Detail</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .restaurant-detail-container {
-            padding: 20px;
-        }
-        .restaurant-detail-container img {
-            max-width: 300px;
-            height: auto;
-            display: block;
-            margin: 0 auto 20px;
-        }
-        .restaurant-detail-container h2 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .restaurant-detail-container p {
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
 <header>
     <h1>GoodEats</h1>
     <p>Restaurant Details</p>
+
+    <div class="theme-toggle">
+        <label class="switch">
+            <input type="checkbox" id="dark-mode-toggle">
+            <span class="slider round"></span>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+
     <nav class="tabs">
         <ul>
             <li><a href="index.html">Restaurants</a></li>
             <li><a href="favourites.html">Favourites</a></li>
-            <li class="active" id="restaurant-detail-tab"></li>
+            <li class="active" id="restaurant-detail-tab"><a href="#"></a></li>
         </ul>
     </nav>
 </header>
