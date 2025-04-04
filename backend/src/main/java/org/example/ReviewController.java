@@ -1,6 +1,5 @@
 package org.example;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,12 @@ public class ReviewController {
     private ReviewService reviewService;
 
     @PostMapping()
-    public ResponseEntity<Review> createReview(@RequestBody Map<String, String> payload) {
-        return new ResponseEntity<>(reviewService.createReview(payload.get("reviewBody"), payload.get("restaurantId")), HttpStatus.CREATED);
+    public ResponseEntity<Review> createReview(@RequestBody Map<String, Object> payload) {
+        String userID = (String) payload.get("userID");
+        String restaurantID = (String) payload.get("restaurantID");
+        String reviewBody = (String) payload.get("reviewBody");
+        int rating = (int) payload.get("rating");
+
+        return new ResponseEntity<>(reviewService.createReview(userID, restaurantID, reviewBody, rating), HttpStatus.CREATED);
     }
 }
