@@ -350,6 +350,21 @@ footer {
     color: #ddd;
 }
 
+.stars.static-stars > .star {
+    cursor: default;
+    pointer-events: none;
+    color: #ddd !important;
+}
+
+.stars.static-stars > .star.active {
+    color: #ffcc00 !important;
+}
+
+.stars.static-stars > .star:hover,
+.stars.static-stars > .star:hover ~ .star {
+    color: inherit !important;
+}
+
 .rating-count {
     font-size: 0.85rem;
     color: #666;

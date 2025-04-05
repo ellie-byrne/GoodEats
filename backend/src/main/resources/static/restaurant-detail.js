@@ -68,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             restaurantDetailTab.innerHTML = `<a href="#">${name}</a>`;
 
-            // Fetch and display reviews for this restaurant
             fetchReviews(restaurantId);
         })
         .catch((error) => {
@@ -126,8 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function generateStars(rating) {
         const starsContainer = document.createElement("div");
-        starsContainer.classList.add("stars");
-        starsContainer.dataset.rating = rating;
+        starsContainer.classList.add("stars", "static-stars");
 
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement("span");
@@ -136,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 star.classList.add("active");
             }
             star.dataset.value = i;
-            star.textContent = "★"; // Unicode star
+            star.textContent = "★";
             starsContainer.appendChild(star);
         }
 
