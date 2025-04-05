@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -43,5 +44,11 @@ public class RestaurantController {
             logger.error("Error retrieving restaurants: {}", e.getMessage(), e);
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    @GetMapping("/restaurants/{id}")
+    public ResponseEntity<Restaurant> getRestaurantById(@PathVariable Integer id) {
+        return restaurantRepository.findById(id)
+                .map(restaurant -> new ResponseEntity<>(restaurant, HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }

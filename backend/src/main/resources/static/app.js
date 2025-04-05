@@ -238,6 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     return
                 }
                 addToRecentlyViewed(restaurant)
+
+                const restaurantId = restaurant.id
+                window.location.href = `http://localhost:8080/restaurant-detail.html?id=${restaurantId}`
             })
 
             container.appendChild(card)

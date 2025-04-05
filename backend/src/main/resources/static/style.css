@@ -350,6 +350,21 @@ footer {
     color: #ddd;
 }
 
+.stars.static-stars > .star {
+    cursor: default;
+    pointer-events: none;
+    color: #ddd !important;
+}
+
+.stars.static-stars > .star.active {
+    color: #ffcc00 !important;
+}
+
+.stars.static-stars > .star:hover,
+.stars.static-stars > .star:hover ~ .star {
+    color: inherit !important;
+}
+
 .rating-count {
     font-size: 0.85rem;
     color: #666;
@@ -546,3 +561,89 @@ input:checked + .slider:before {
     }
 }
 
+.restaurant-detail-container {
+    padding: 20px;
+}
+.restaurant-detail-container img {
+    max-width: 300px;
+    height: auto;
+    display: block;
+    margin: 0 auto 20px;
+}
+.restaurant-detail-container h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.restaurant-detail-container p {
+    text-align: center;
+}
+
+/* Restaurant Detail Container */
+.restaurant-detail-container {
+    padding: 20px;
+    background-color: white; /* Background color for the detail container */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    margin-bottom: 20px; /* Space below the container */
+}
+
+/* Image Styles */
+.restaurant-detail-container img {
+    max-width: 100%; /* Make image responsive */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 8px; /* Rounded corners for the image */
+    display: block; /* Center the image */
+    margin: 0 auto 20px; /* Center and add space below */
+}
+
+/* Heading Styles */
+.restaurant-detail-container h2 {
+    text-align: center; /* Center the heading */
+    margin-bottom: 10px; /* Space below the heading */
+    color: #333; /* Heading color */
+}
+
+/* Paragraph Styles */
+.restaurant-detail-container p {
+    text-align: center; /* Center the text */
+    color: #666; /* Text color */
+    margin-bottom: 10px; /* Space below paragraphs */
+}
+
+/* Dark Mode Styles for Restaurant Detail */
+body.dark-mode .restaurant-detail-container {
+    background-color: #1e1e1e; /* Dark background for dark mode */
+    color: #e0e0e0; /* Light text color for dark mode */
+}
+
+body.dark-mode .restaurant-detail-container h2 {
+    color: #e0e0e0; /* Light heading color for dark mode */
+}
+
+body.dark-mode .restaurant-detail-container p {
+    color: #aaa; /* Lighter text color for dark mode */
+}
+
+/* Review Card Styles */
+.review-card {
+    background-color: white; /* Background color for the review card */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    padding: 15px; /* Padding inside the card */
+    margin-bottom: 15px; /* Space below each review card */
+}
+
+/* Review Text Styles */
+.review-card p {
+    margin: 5px 0; /* Space between paragraphs */
+}
+
+/* Dark Mode Styles for Review Cards */
+body.dark-mode .review-card {
+    background-color: #1e1e1e; /* Dark background for dark mode */
+    color: #e0e0e0; /* Light text color for dark mode */
+}
+
+body.dark-mode .review-card p {
+    color: #aaa; /* Lighter text color for dark mode */
+}

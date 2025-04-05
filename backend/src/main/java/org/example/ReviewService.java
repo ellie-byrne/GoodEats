@@ -1,19 +1,18 @@
 package org.example;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 public class ReviewService {
+
     @Autowired
     private ReviewRepository reviewRepository;
 
-    @Autowired
-    private RestaurantRepository restaurantRepository;
-
-    public Review createReview(String reviewBody, String restaurantId) {
-        Review review = new Review(reviewBody);
-        return reviewRepository.save(review);
+    public Review createReview(Integer userID, Integer restaurantID, String review, Integer rating) {
+        Review newReview = new Review(userID, restaurantID, new Date(), review, rating);
+        return reviewRepository.save(newReview);
     }
 }
