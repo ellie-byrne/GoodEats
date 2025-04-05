@@ -1,28 +1,29 @@
 document.addEventListener("DOMContentLoaded", () => {
     const restaurantDetailContainer = document.getElementById("restaurant-detail-container");
+    const reviewsContainer = document.getElementById("reviews-container");
     const restaurantDetailTab = document.getElementById("restaurant-detail-tab");
 
-    setupDarkMode()
+    setupDarkMode();
 
     // DARK MODE FUNCTIONALITY
     function setupDarkMode() {
         const darkModeToggle = document.getElementById("dark-mode-toggle");
-        const darkModeEnabled = localStorage.getItem("darkModeEnabled") === "true"
+        const darkModeEnabled = localStorage.getItem("darkModeEnabled") === "true";
 
         if (darkModeEnabled) {
-            document.body.classList.add("dark-mode")
-            darkModeToggle.checked = true
+            document.body.classList.add("dark-mode");
+            darkModeToggle.checked = true;
         }
 
         darkModeToggle.addEventListener("change", () => {
             if (darkModeToggle.checked) {
-                document.body.classList.add("dark-mode")
-                localStorage.setItem("darkModeEnabled", "true")
+                document.body.classList.add("dark-mode");
+                localStorage.setItem("darkModeEnabled", "true");
             } else {
-                document.body.classList.remove("dark-mode")
-                localStorage.setItem("darkModeEnabled", "false")
+                document.body.classList.remove("dark-mode");
+                localStorage.setItem("darkModeEnabled", "false");
             }
-        })
+        });
     }
 
     // Extract restaurant ID from URL parameters
@@ -61,17 +62,84 @@ document.addEventListener("DOMContentLoaded", () => {
             document.title = `GoodEats - ${name}`;
 
             restaurantDetailContainer.innerHTML = `
-                <img src="${imageUrl}" alt="${name}" onerror="this.src='https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg'">
                 <h2>${name}</h2>
                 <p>Type: ${type}</p>
                 <p>Borough: ${borough}</p>
-                ${restaurant.link ? `<p><a href="${restaurant.link}" target="_blank">Visit Website</a></p>` : ""}
-                `;
+            `;
             restaurantDetailTab.innerHTML = `<a href="#">${name}</a>`;
+
+            // Fetch and display reviews for this restaurant
+            fetchReviews(restaurantId);
         })
         .catch((error) => {
             console.error("Error fetching restaurant details:", error);
             restaurantDetailContainer.innerHTML = `<div class="error">Error loading restaurant details. Please try again later.</div>`;
             restaurantDetailTab.textContent = "Fetch Error";
         });
+
+    async function fetchReviews(restaurantId) {
+        reviewsContainer.innerHTML = '<h3>Reviews:</h3><div class="loading">Loading reviews...</div>';
+        try {
+            const response = await fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`);
+            if (!response.ok) {
+                throw new Error(`Error fetching reviews. Status: ${response.status}`);
+            }
+            const reviews = await response.json();
+
+            reviewsContainer.innerHTML = '<h3>Reviews:</h3>';
+
+            if (Array.isArray(reviews) && reviews.length === 0) {
+                reviewsContainer.innerHTML += "<p>No reviews yet.</p>";
+                return;
+            }
+
+            for (const review of reviews) {
+                const userResponse = await fetch(`http://localhost:8080/api/users/${review.userID}`);
+                if (!userResponse.ok) {
+                    console.error(`Error fetching user with ID ${review.userID}`);
+                    continue;
+                }
+                const user = await userResponse.json();
+                const username = (user && user.username) ? user.username : `User ${review.userID}`;
+
+                const reviewCard = document.createElement("div");
+                reviewCard.classList.add("review-card");
+
+                const stars = generateStars(review.rating);
+
+                reviewCard.innerHTML = `
+                <p><strong>${username}</strong></p>
+                <div class="restaurant-rating">
+                    ${stars}
+                </div>
+                <p><strong>Review:</strong> ${review.review}</p>
+                <p><small>Date: ${new Date(review.date).toLocaleDateString()}</small></p>
+            `;
+                reviewsContainer.appendChild(reviewCard);
+            }
+            setupDarkMode();
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+            reviewsContainer.innerHTML = '<h3>Reviews:</h3><p>Error loading reviews. Please try again later.</p>';
+        }
+    }
+
+    function generateStars(rating) {
+        const starsContainer = document.createElement("div");
+        starsContainer.classList.add("stars");
+        starsContainer.dataset.rating = rating;
+
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement("span");
+            star.classList.add("star");
+            if (i <= rating) {
+                star.classList.add("active");
+            }
+            star.dataset.value = i;
+            star.textContent = "★"; // Unicode star
+            starsContainer.appendChild(star);
+        }
+
+        return starsContainer.outerHTML;
+    }
 });

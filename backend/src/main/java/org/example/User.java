@@ -7,14 +7,14 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "Users") // New collection
+@Document(collection = "Users")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
     @Id
-    private ObjectId id;
-    private String username; // New field
-    private String password; // New field
-    private String email; // New field
+    private Integer id;
+    private String username;
+    private String password;
+    private String email;
 }

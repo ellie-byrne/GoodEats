@@ -7,23 +7,35 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/reviews")
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class ReviewController {
 
     @Autowired
     private ReviewService reviewService;
 
-    @PostMapping()
-    public ResponseEntity<Review> createReview(@RequestBody Map<String, Object> payload) {
-        String userID = (String) payload.get("userID");
-        String restaurantID = (String) payload.get("restaurantID");
-        String reviewBody = (String) payload.get("reviewBody");
-        int rating = (int) payload.get("rating");
+    @Autowired
+    private ReviewRepository reviewRepository;
 
-        return new ResponseEntity<>(reviewService.createReview(userID, restaurantID, reviewBody, rating), HttpStatus.CREATED);
+    @GetMapping("/restaurants/{restaurantID}/reviews")
+    public ResponseEntity<List<Review>> getReviewsForRestaurant(@PathVariable Integer restaurantID) {
+        List<Review> reviews = reviewRepository.findByRestaurantID(restaurantID);
+        return ResponseEntity.ok(reviews);
+    }
+
+    @PostMapping("/reviews")
+    public ResponseEntity<Review> createReview(@RequestBody Map<String, Object> payload) {
+        Integer userID = (Integer) payload.get("userID");
+        Integer restaurantID = (Integer) payload.get("restaurantID");
+        String review = (String) payload.get("review");
+        Integer rating = (Integer) payload.get("rating");
+
+        return new ResponseEntity<>(reviewService.createReview(userID, restaurantID, review, rating), HttpStatus.CREATED);
     }
 }

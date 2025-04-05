@@ -15,14 +15,14 @@ import java.util.Date;
 @NoArgsConstructor
 public class Review {
     @Id
-    private ObjectId id;
-    private String userID; // New field
-    private String restaurantID; // New field
-    private Date date; // New field
-    private String review; // New field
-    private int rating; // New field
+    private Integer id;
+    private Integer userID;
+    private Integer restaurantID;
+    private Date date;
+    private String review;
+    private int rating;
 
-    public Review(String userID, String restaurantID, Date date, String review, int rating) {
+    public Review(Integer userID, Integer restaurantID, Date date, String review, Integer rating) {
         this.userID = userID;
         this.restaurantID = restaurantID;
         this.date = date;
