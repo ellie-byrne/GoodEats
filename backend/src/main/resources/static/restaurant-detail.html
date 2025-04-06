@@ -43,18 +43,22 @@
             <h3>Submit a Review</h3>
             <form id="review-form">
                 <textarea id="review-text" placeholder="Write your review here..." required></textarea>
+
                 <label for="rating">Rating:</label>
-                <select id="rating" required>
-                    <option value="">Select a rating</option>
-                    <option value="1">1 Star</option>
-                    <option value="2">2 Stars</option>
-                    <option value="3">3 Stars</option>
-                    <option value="4">4 Stars</option>
-                    <option value="5">5 Stars</option>
-                </select>
+                <div class="restaurant-rating">
+                    <div class="stars" id="review-stars" data-rating="0">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                </div>
+
                 <button type="submit">Submit Review</button>
             </form>
         </div>
+
 
         <div id="reviews-container" class="reviews-container">
             <h3>Reviews:</h3>

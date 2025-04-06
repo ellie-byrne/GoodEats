@@ -23,6 +23,7 @@ function storeLogin(username, userId) {
     localStorage.setItem("username", username);
     localStorage.setItem("userId", userId); // Store userId
     updateAuthDisplay();
+    window.location.reload();
 }
 
 function logout() {
@@ -32,6 +33,7 @@ function logout() {
     localStorage.removeItem("username");
     localStorage.removeItem("userId");
     updateAuthDisplay();
+    window.location.reload();
 }
 
 function toggleAuthModal() {

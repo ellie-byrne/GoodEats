@@ -30,4 +30,13 @@ public class ReviewService {
         Counter counter = mongoTemplate.findAndModify(query, update, org.springframework.data.mongodb.core.FindAndModifyOptions.options().returnNew(true).upsert(true), Counter.class);
         return counter.getSeq();
     }
+
+    public Review updateReview(Integer id, String reviewText, Integer rating) {
+        Review existing = reviewRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setReview(reviewText);
+        existing.setRating(rating);
+        return reviewRepository.save(existing);
+    }
 }

@@ -45,4 +45,22 @@ public class ReviewController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PutMapping("/reviews/{id}")
+    public ResponseEntity<Review> updateReview(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
+        try {
+            String reviewText = (String) payload.get("review");
+            Integer rating = (Integer) payload.get("rating");
+
+            Review updatedReview = reviewService.updateReview(id, reviewText, rating);
+            if (updatedReview == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok(updatedReview);
+        } catch (Exception e) {
+            System.out.println("Update error: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

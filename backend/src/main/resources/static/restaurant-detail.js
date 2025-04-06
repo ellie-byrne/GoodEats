@@ -2,10 +2,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const restaurantDetailContainer = document.getElementById("restaurant-detail-container");
     const reviewsContainer = document.getElementById("reviews-container");
     const restaurantDetailTab = document.getElementById("restaurant-detail-tab");
+    const reviewForm = document.getElementById("review-form");
+
+    let existingUserReview = null;
 
     setupDarkMode();
 
-    // DARK MODE FUNCTIONALITY
     function setupDarkMode() {
         const darkModeToggle = document.getElementById("dark-mode-toggle");
         const darkModeEnabled = localStorage.getItem("darkModeEnabled") === "true";
@@ -26,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Extract restaurant ID from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const restaurantId = urlParams.get("id");
 
@@ -36,27 +37,22 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Fetch restaurant details from API using the ID
     fetch(`http://localhost:8080/api/restaurants/${restaurantId}`)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Network response was not ok. Status: ${response.status}`);
-            }
+        .then(response => {
+            if (!response.ok) throw new Error(`Status: ${response.status}`);
             return response.json();
         })
-        .then((restaurant) => {
+        .then(restaurant => {
             if (!restaurant) {
                 restaurantDetailContainer.innerHTML = '<div class="error">Restaurant not found.</div>';
                 restaurantDetailTab.textContent = "Not Found";
                 return;
             }
 
-            // Display restaurant details
             const name = restaurant.Name || restaurant.name || "Unnamed Restaurant";
             const type = restaurant.Category || restaurant.type || "Restaurant";
             const borough = restaurant.Borough || restaurant.borough || "";
-            const imageUrl =
-                restaurant.storePhoto ||
+            const imageUrl = restaurant.storePhoto ||
                 "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
 
             document.title = `GoodEats - ${name}`;
@@ -70,128 +66,179 @@ document.addEventListener("DOMContentLoaded", () => {
 
             fetchReviews(restaurantId);
         })
-        .catch((error) => {
+        .catch(error => {
             console.error("Error fetching restaurant details:", error);
-            restaurantDetailContainer.innerHTML = `<div class="error">Error loading restaurant details. Please try again later.</div>`;
+            restaurantDetailContainer.innerHTML = `<div class="error">Error loading restaurant details.</div>`;
             restaurantDetailTab.textContent = "Fetch Error";
         });
 
-    const reviewForm = document.getElementById("review-form");
-    reviewForm.addEventListener("submit", function (e) {
+    setupReviewRatings();
+
+    reviewForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         const reviewText = document.getElementById("review-text").value;
-        const rating = document.getElementById("rating").value;
+        const rating = parseInt(document.getElementById("review-stars").dataset.rating);
+        const userId = localStorage.getItem("userId");
 
-        // Call the function to submit the review
-        submitReview(restaurantId, reviewText, rating);
-    });
-});
-
-function fetchReviews(restaurantId) {
-    // Fetch reviews from API
-    fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Error fetching reviews. Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((reviews) => {
-            // Display reviews
-            const reviewsContainer = document.getElementById("reviews-container");
-            reviewsContainer.innerHTML = '<h3>Reviews:</h3>';
-
-            if (Array.isArray(reviews) && reviews.length === 0) {
-                reviewsContainer.innerHTML += "<p>No reviews yet.</p>";
-                return;
-            }
-
-            for (const review of reviews) {
-                const userResponse = fetch(`http://localhost:8080/api/users/${review.userID}`);
-                userResponse.then((userResponse) => {
-                    if (!userResponse.ok) {
-                        console.error(`Error fetching user with ID ${review.userID}`);
-                        return;
-                    }
-                    userResponse.json().then((user) => {
-                        const username = (user && user.username) ? user.username : `User  ${review.userID}`;
-
-                        const reviewCard = document.createElement("div");
-                        reviewCard.classList.add("review-card");
-
-                        const stars = generateStars(review.rating);
-
-                        reviewCard.innerHTML = `
-                            <p><strong>${username}</strong></p>
-                            <div class="restaurant-rating">
-                                ${stars}
-                            </div>
-                            <p><strong>Review:</strong> ${review.review}</p>
-                            <p><small>Date: ${new Date(review.date).toLocaleDateString()}</small></p>
-                        `;
-                        reviewsContainer.appendChild(reviewCard);
-                    });
-                });
-            }
-        })
-        .catch((error) => {
-            console.error("Error fetching reviews:", error);
-            const reviewsContainer = document.getElementById("reviews-container");
-            reviewsContainer.innerHTML = '<h3>Reviews:</h3><p>Error loading reviews. Please try again later.</p>';
-        });
-}
-
-function generateStars(rating) {
-    const starsContainer = document.createElement("div");
-    starsContainer.classList.add("stars", "static-stars");
-
-    for (let i = 1; i <= 5; i++) {
-        const star = document.createElement("span");
-        star.classList.add("star");
-        if (i <= rating) {
-            star.classList.add("active");
+        if (!userId) {
+            alert("Please log in to submit a review.");
+            return;
         }
-        star.dataset.value = i;
-        star.textContent = "★";
-        starsContainer.appendChild(star);
+
+        const payload = {
+            userID: parseInt(userId),
+            restaurantID: parseInt(restaurantId),
+            review: reviewText,
+            rating: rating
+        };
+
+        if (existingUserReview) {
+            console.log("existingUserReview:", existingUserReview); // Log the whole object
+            console.log("existingUserReview.id:", existingUserReview.id); // Log the id specifically
+        } else {
+            console.log("existingUserReview is null or undefined");
+        }
+
+        const method = existingUserReview ? "PUT" : "POST";
+        const endpoint = existingUserReview
+            ? `/api/reviews/${existingUserReview.id}`
+            : `/api/reviews`;
+
+        try {
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            alert(existingUserReview ? "Review updated!" : "Review submitted!");
+            await fetchReviews(restaurantId);
+            existingUserReview = data;
+        } catch (error) {
+            console.error("Error submitting/updating review:", error);
+            alert("There was an error. Please try again.");
+        }
+    });
+
+    function fetchReviews(restaurantId) {
+        const userId = localStorage.getItem("userId");
+
+        fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+            .then(response => {
+                if (!response.ok) throw new Error(`Status: ${response.status}`);
+                return response.json();
+            })
+            .then(async reviews => {
+                reviewsContainer.innerHTML = '<h3>Reviews:</h3>';
+
+                if (!reviews || reviews.length === 0) {
+                    reviewsContainer.innerHTML += "<p>No reviews yet.</p>";
+                    return;
+                }
+
+                // Separate user’s review from the rest
+                const otherReviews = [];
+                let userReview = null;
+
+                for (const review of reviews) {
+                    if (userId && parseInt(userId) === review.userID) {
+                        userReview = review;
+                        existingUserReview = review;
+
+                        // Pre-fill form
+                        document.getElementById("review-text").value = review.review;
+                        document.getElementById("rating").value = review.rating;
+                        document.querySelector("#review-form button").textContent = "Edit Review";
+                    } else {
+                        otherReviews.push(review);
+                    }
+                }
+
+                // Render user's review first
+                if (userReview) {
+                    const user = await fetchUser(userReview.userID);
+                    reviewsContainer.appendChild(createReviewCard(user, userReview));
+                }
+
+                // Then render others
+                for (const review of otherReviews) {
+                    const user = await fetchUser(review.userID);
+                    reviewsContainer.appendChild(createReviewCard(user, review));
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching reviews:", error);
+                reviewsContainer.innerHTML = '<h3>Reviews:</h3><p>Error loading reviews.</p>';
+            });
     }
-    return starsContainer.outerHTML;
-}
 
-// Function to submit the review
-function submitReview(restaurantId, reviewText, rating) {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-        alert("Please log in to submit a review.");
-        return;
+    function fetchUser(userId) {
+        return fetch(`http://localhost:8080/api/users/${userId}`)
+            .then(res => res.ok ? res.json() : null)
+            .catch(err => {
+                console.error("User fetch error:", err);
+                return null;
+            });
     }
 
-    const payload = {
-        userID: parseInt(userId),
-        restaurantID: parseInt(restaurantId),
-        review: reviewText,
-        rating: parseInt(rating)
-    };
+    function createReviewCard(user, review) {
+        const username = (user && user.username) ? user.username : `User ${review.userID}`;
+        const stars = generateStars(review.rating);
 
-    fetch("/api/reviews", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert("Review submitted successfully!");
-            fetchReviews(restaurantId);
-        })
-        .catch(error => {
-            console.error("Error submitting review:", error);
-            alert("There was an error submitting your review. Please try again.");
+        const reviewCard = document.createElement("div");
+        reviewCard.classList.add("review-card");
+
+        reviewCard.innerHTML = `
+            <p><strong>${username}</strong></p>
+            <div class="restaurant-rating">${stars}</div>
+            <p><strong>Review:</strong> ${review.review}</p>
+            <p><small>Date: ${new Date(review.date).toLocaleDateString()}</small></p>
+        `;
+        return reviewCard;
+    }
+
+    function generateStars(rating) {
+        const starsContainer = document.createElement("div");
+        starsContainer.classList.add("stars", "static-stars");
+
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement("span");
+            star.classList.add("star");
+            if (i <= rating) star.classList.add("active");
+            star.dataset.value = i;
+            star.textContent = "★";
+            starsContainer.appendChild(star);
+        }
+        return starsContainer.outerHTML;
+    }
+
+    function setupReviewRatings() {
+        const starsContainer = document.getElementById("review-stars");
+
+        starsContainer.querySelectorAll(".star").forEach((star) => {
+            star.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const value = parseInt(star.dataset.value);
+                rateReview(value, starsContainer);
+            });
         });
-}
+    }
+
+    function rateReview(rating, starsContainer) {
+        starsContainer.dataset.rating = rating;
+        updateStars(starsContainer, rating);
+    }
+
+    function updateStars(starsContainer, rating) {
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach((star) => {
+            const value = parseInt(star.dataset.value);
+            if (value <= rating) {
+                star.classList.add("active");
+            } else {
+                star.classList.remove("active");
+            }
+        });
+    }
+});
