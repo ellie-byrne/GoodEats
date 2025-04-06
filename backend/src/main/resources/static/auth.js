@@ -16,11 +16,12 @@ function updateAuthDisplay() {
     }
 }
 
-function storeLogin(username) {
+function storeLogin(username, userId) {
     isLoggedIn = true;
     currentUsername = username;
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("username", username);
+    localStorage.setItem("userId", userId); // Store userId
     updateAuthDisplay();
 }
 
@@ -29,6 +30,7 @@ function logout() {
     currentUsername = null;
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("username");
+    localStorage.removeItem("userId");
     updateAuthDisplay();
 }
 
@@ -108,7 +110,7 @@ function login(username, password) {
         })
         .then((data) => {
             if (data.message === "Login successful") {
-                storeLogin(username);
+                storeLogin(username, data.userId); // Pass userId to storeLogin
                 toggleAuthModal();
             } else {
                 alert(data.message);

@@ -31,11 +31,18 @@ public class ReviewController {
 
     @PostMapping("/reviews")
     public ResponseEntity<Review> createReview(@RequestBody Map<String, Object> payload) {
-        Integer userID = (Integer) payload.get("userID");
-        Integer restaurantID = (Integer) payload.get("restaurantID");
-        String review = (String) payload.get("review");
-        Integer rating = (Integer) payload.get("rating");
+        try {
+            // Retrieve values from the payload
+            Integer userID = (Integer) payload.get("userID");
+            Integer restaurantID = Integer.parseInt(payload.get("restaurantID").toString());
+            String review = (String) payload.get("review");
+            Integer rating = (Integer) payload.get("rating");
 
-        return new ResponseEntity<>(reviewService.createReview(userID, restaurantID, review, rating), HttpStatus.CREATED);
+            // Create and return the review
+            return new ResponseEntity<>(reviewService.createReview(userID, restaurantID, review, rating), HttpStatus.CREATED);
+        } catch (Exception e) {
+            System.out.println("Error occurred: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

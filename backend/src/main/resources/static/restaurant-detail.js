@@ -76,71 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
             restaurantDetailTab.textContent = "Fetch Error";
         });
 
-    async function fetchReviews(restaurantId) {
-        reviewsContainer.innerHTML = '<h3>Reviews:</h3><div class="loading">Loading reviews...</div>';
-        try {
-            const response = await fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`);
-            if (!response.ok) {
-                throw new Error(`Error fetching reviews. Status: ${response.status}`);
-            }
-            const reviews = await response.json();
-
-            reviewsContainer.innerHTML = '<h3>Reviews:</h3>';
-
-            if (Array.isArray(reviews) && reviews.length === 0) {
-                reviewsContainer.innerHTML += "<p>No reviews yet.</p>";
-                return;
-            }
-
-            for (const review of reviews) {
-                const userResponse = await fetch(`http://localhost:8080/api/users/${review.userID}`);
-                if (!userResponse.ok) {
-                    console.error(`Error fetching user with ID ${review.userID}`);
-                    continue;
-                }
-                const user = await userResponse.json();
-                const username = (user && user.username) ? user.username : `User  ${review.userID}`;
-
-                const reviewCard = document.createElement("div");
-                reviewCard.classList.add("review-card");
-
-                const stars = generateStars(review.rating);
-
-                reviewCard.innerHTML = `
-                <p><strong>${username}</strong></p>
-                <div class="restaurant-rating">
-                    ${stars}
-                </div>
-                <p><strong>Review:</strong> ${review.review}</p>
-                <p><small>Date: ${new Date(review.date).toLocaleDateString()}</small></p>
-            `;
-                reviewsContainer.appendChild(reviewCard);
-            }
-            setupDarkMode();
-        } catch (error) {
-            console.error("Error fetching reviews:", error);
-            reviewsContainer.innerHTML = '<h3>Reviews:</h3><p>Error loading reviews. Please try again later.</p>';
-        }
-    }
-
-    function generateStars(rating) {
-        const starsContainer = document.createElement("div");
-        starsContainer.classList.add("stars", "static-stars");
-
-        for (let i = 1; i <= 5; i++) {
-            const star = document.createElement("span");
-            star.classList.add("star");
-            if (i <= rating) {
-                star.classList.add("active");
-            }
-            star.dataset.value = i;
-            star.textContent = "★";
-            starsContainer.appendChild(star);
-        }
-
-        return starsContainer.outerHTML;
-    }
-
     const reviewForm = document.getElementById("review-form");
     reviewForm.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -152,17 +87,88 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+function fetchReviews(restaurantId) {
+    // Fetch reviews from API
+    fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`Error fetching reviews. Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((reviews) => {
+            // Display reviews
+            const reviewsContainer = document.getElementById("reviews-container");
+            reviewsContainer.innerHTML = '<h3>Reviews:</h3>';
+
+            if (Array.isArray(reviews) && reviews.length === 0) {
+                reviewsContainer.innerHTML += "<p>No reviews yet.</p>";
+                return;
+            }
+
+            for (const review of reviews) {
+                const userResponse = fetch(`http://localhost:8080/api/users/${review.userID}`);
+                userResponse.then((userResponse) => {
+                    if (!userResponse.ok) {
+                        console.error(`Error fetching user with ID ${review.userID}`);
+                        return;
+                    }
+                    userResponse.json().then((user) => {
+                        const username = (user && user.username) ? user.username : `User  ${review.userID}`;
+
+                        const reviewCard = document.createElement("div");
+                        reviewCard.classList.add("review-card");
+
+                        const stars = generateStars(review.rating);
+
+                        reviewCard.innerHTML = `
+                            <p><strong>${username}</strong></p>
+                            <div class="restaurant-rating">
+                                ${stars}
+                            </div>
+                            <p><strong>Review:</strong> ${review.review}</p>
+                            <p><small>Date: ${new Date(review.date).toLocaleDateString()}</small></p>
+                        `;
+                        reviewsContainer.appendChild(reviewCard);
+                    });
+                });
+            }
+        })
+        .catch((error) => {
+            console.error("Error fetching reviews:", error);
+            const reviewsContainer = document.getElementById("reviews-container");
+            reviewsContainer.innerHTML = '<h3>Reviews:</h3><p>Error loading reviews. Please try again later.</p>';
+        });
+}
+
+function generateStars(rating) {
+    const starsContainer = document.createElement("div");
+    starsContainer.classList.add("stars", "static-stars");
+
+    for (let i = 1; i <= 5; i++) {
+        const star = document.createElement("span");
+        star.classList.add("star");
+        if (i <= rating) {
+            star.classList.add("active");
+        }
+        star.dataset.value = i;
+        star.textContent = "★";
+        starsContainer.appendChild(star);
+    }
+    return starsContainer.outerHTML;
+}
+
 // Function to submit the review
 function submitReview(restaurantId, reviewText, rating) {
-    const userId = localStorage.getItem("userId"); // Retrieve user ID from localStorage
+    const userId = localStorage.getItem("userId");
     if (!userId) {
         alert("Please log in to submit a review.");
         return;
     }
 
     const payload = {
-        userID: parseInt(userId), // Use the retrieved user ID
-        restaurantID: restaurantId,
+        userID: parseInt(userId),
+        restaurantID: parseInt(restaurantId),
         review: reviewText,
         rating: parseInt(rating)
     };

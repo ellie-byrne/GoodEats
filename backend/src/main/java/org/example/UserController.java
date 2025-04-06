@@ -63,22 +63,22 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody User user) {
+        Map<String, Object> response = new HashMap<>();
         Optional<User> existingUser  = userRepository.findByUsername(user.getUsername());
+
         if (!existingUser .isPresent()) {
-            Map<String, String> response = new HashMap<>();
             response.put("message", "Username not found");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         if (!existingUser .get().getPassword().equals(user.getPassword())) {
-            Map<String, String> response = new HashMap<>();
             response.put("message", "Incorrect password");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        Map<String, String> response = new HashMap<>();
         response.put("message", "Login successful");
+        response.put("userId", existingUser .get().getId()); // Include user ID in response
         return ResponseEntity.ok(response);
     }
 }
