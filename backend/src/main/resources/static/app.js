@@ -61,47 +61,16 @@ document.getElementById("auth-form").addEventListener("submit", function (e) {
     const password = document.getElementById("password").value;
     const email = document.getElementById("email").value;
 
-    if (!username || !password || (isLogin === false && !email)) {
+    if (!username || !password || (!isLogin && !email)) {
         alert("Please fill all fields.");
         return;
     }
 
-    const userData = {
-        username: username,
-        password: password,
-        email: email
-    };
-
-    const endpoint = isLogin ? "/api/users/login" : "/api/users/signup";
-
-    fetch(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.message) {
-                alert(data.message);
-                if (isLogin) {
-                    storeLogin(username); // Only call this if logging in
-                } else {
-                    // If signup is successful, you might want to log in automatically
-                    return login(username, password); // Call login after successful signup
-                }
-            }
-        })
-        .catch(error => {
-            console.error("Error during fetch:", error);
-            alert("Something went wrong. Check the console for more details.");
-        });
+    if (isLogin) {
+        login(username, password);
+    } else {
+        signup(username, password, email); // This will handle login inside it
+    }
 });
 
 function login(username, password) {
@@ -161,13 +130,9 @@ function signup(username, password, email) {
         })
         .then(data => {
             console.log("Signup response:", data);
-            if (data.message) {
-                alert(data.message);
-                // Log in the user after successful signup
-                setTimeout(() => {
-                    return login(username, password);
-                }, 1000); // Wait for 1 second before logging in
-            }
+            alert(data.message);
+            // Log in the user after successful signup
+            return login(username, password);
         })
         .catch(error => {
             console.error("Error during signup:", error);
@@ -201,16 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const restaurantsContainer = document.getElementById("restaurants-container");
     const darkModeToggle = document.getElementById("dark-mode-toggle");
     const recentlyViewedSection = document.getElementById("recently-viewed");
-
-    document.getElementById("auth-form").addEventListener("submit", function (e) {
-        e.preventDefault(); // Prevent the default form submission
-
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-
-        // Call the login function
-        login(username, password);
-    });
 
     // Store all restaurants for filtering
     let allRestaurants = []

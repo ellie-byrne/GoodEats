@@ -45,6 +45,12 @@ public class UserController {
                 return ResponseEntity.badRequest().body(response);
             }
 
+            // Check if the email already exists
+            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+                response.put("message", "Email already exists.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
             // Save the user
             userService.signUp(user);
             response.put("message", "User  signed up successfully!");
