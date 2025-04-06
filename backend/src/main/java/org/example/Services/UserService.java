@@ -1,8 +1,8 @@
-package org.example;
+package org.example.Services;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.example.Models.User;
+import org.example.Respositories.UserRepository;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,7 +21,24 @@ class Counter {
     @Id
     private String id;
     private int seq;
-}
+
+        // Getters and setters
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public int getSeq() {
+            return seq;
+        }
+
+        public void setSeq(int seq) {
+            this.seq = seq;
+        }
+    }
 
 @Service
 public class UserService {
