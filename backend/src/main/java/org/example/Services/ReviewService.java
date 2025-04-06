@@ -1,5 +1,7 @@
-package org.example;
+package org.example.Services;
 
+import org.example.Models.Review;
+import org.example.Respositories.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,5 +1,8 @@
-package org.example;
+package org.example.Controllers;
 
+import org.example.Models.User;
+import org.example.Respositories.UserRepository;
+import org.example.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

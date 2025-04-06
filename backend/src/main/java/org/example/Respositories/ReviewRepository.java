@@ -1,5 +1,6 @@
-package org.example;
+package org.example.Respositories;
 
+import org.example.Models.Review;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
