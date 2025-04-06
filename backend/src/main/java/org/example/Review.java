@@ -7,18 +7,26 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "reviews")
+import java.util.Date;
+
+@Document(collection = "Reviews") // Updated to match the new collection name
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Review {
-
     @Id
-    private ObjectId id;
-    private String body;
+    private Integer id;
+    private Integer userID;
+    private Integer restaurantID;
+    private Date date;
+    private String review;
+    private int rating;
 
-    public Review(String body) {
-        this.body = body;
+    public Review(Integer userID, Integer restaurantID, Date date, String review, Integer rating) {
+        this.userID = userID;
+        this.restaurantID = restaurantID;
+        this.date = date;
+        this.review = review;
+        this.rating = rating;
     }
 }

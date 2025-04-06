@@ -1,17 +1,216 @@
+let isLogin = true;
+let isLoggedIn = false;
+let currentUsername = null;
+
+function updateAuthDisplay() {
+    console.log("updateAuthDisplay called"); // This should log
+    const loginButton = document.getElementById("login-button");
+    const usernameDisplay = document.getElementById("username-display");
+
+    if (isLoggedIn) {
+        console.log("User  is logged in"); // This should log
+        loginButton.style.display = "none";
+        usernameDisplay.style.display = "block";
+        // Use innerHTML instead of textContent
+        usernameDisplay.innerHTML = `Logged in as: ${currentUsername} <button onclick="logout()">Logout</button>`;
+    } else {
+        console.log("User  is logged out"); // This should log
+        loginButton.style.display = "block";
+        usernameDisplay.style.display = "none";
+    }
+}
+
+function storeLogin(username) {
+    console.log("storeLogin called with username:", username);
+    isLoggedIn = true;
+    currentUsername = username;
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("username", username);
+    console.log("User  logged in:", currentUsername);
+    updateAuthDisplay();
+}
+
+function logout() {
+    isLoggedIn = false;
+    currentUsername = null;
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("username");
+    updateAuthDisplay();
+}
+
+function toggleAuthModal() {
+    const modal = document.getElementById("auth-modal");
+    modal.style.display = modal.style.display === "block" ? "none" : "block";
+}
+
+function switchAuthMode() {
+    isLogin = !isLogin;
+    document.getElementById("modal-title").textContent = isLogin ? "Login" : "Sign Up";
+    document.getElementById("auth-toggle-text").innerHTML = isLogin
+        ? `Don't have an account? <a href="#" onclick="switchAuthMode()">Sign up</a>`
+        : `Already have an account? <a href="#" onclick="switchAuthMode()">Login</a>`;
+
+    const emailInput = document.getElementById("email");
+    emailInput.style.display = isLogin ? "none" : "block";
+}
+
+document.getElementById("auth-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+
+    if (!username || !password || (isLogin === false && !email)) {
+        alert("Please fill all fields.");
+        return;
+    }
+
+    const userData = {
+        username: username,
+        password: password,
+        email: email
+    };
+
+    const endpoint = isLogin ? "/api/users/login" : "/api/users/signup";
+
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+                if (isLogin) {
+                    storeLogin(username); // Only call this if logging in
+                } else {
+                    // If signup is successful, you might want to log in automatically
+                    return login(username, password); // Call login after successful signup
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Error during fetch:", error);
+            alert("Something went wrong. Check the console for more details.");
+        });
+});
+
+function login(username, password) {
+    console.log("Login function called with username:", username); // Log the username
+    console.log("Payload being sent:", { username, password }); // Log the payload
+
+    fetch("/api/users/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+    })
+        .then((response) => {
+            console.log("Response received:", response); // Log the response
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log("Data received:", data); // Log the data received
+            if (data.message === "Login successful") {
+                console.log("Login success! Calling storeLogin..."); // This should log
+                storeLogin(username);
+                toggleAuthModal();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            alert("Something went wrong!");
+        });
+}
+
+// Function to handle user sign-up
+function signup(username, password, email) {
+    const userData = {
+        username: username,
+        password: password,
+        email: email
+    };
+
+    fetch("/api/users/signup", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Signup response:", data);
+            if (data.message) {
+                alert(data.message);
+                // Log in the user after successful signup
+                setTimeout(() => {
+                    return login(username, password);
+                }, 1000); // Wait for 1 second before logging in
+            }
+        })
+        .catch(error => {
+            console.error("Error during signup:", error);
+            alert("Something went wrong during signup. Check the console for more details.");
+        });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-    // DOM elements
-    const container = document.getElementById("restaurants-container")
-    const boroughFilter = document.getElementById("borough-filter")
-    const categoryFilter = document.getElementById("category-filter")
-    const clearFiltersButton = document.getElementById("clear-filters")
-    const searchInput = document.getElementById("search-input")
-    const searchButton = document.getElementById("search-button")
-    const listViewBtn = document.getElementById("list-view-btn")
-    const mapViewBtn = document.getElementById("map-view-btn")
-    const mapContainer = document.getElementById("map-container")
-    const restaurantsContainer = document.getElementById("restaurants-container")
-    const darkModeToggle = document.getElementById("dark-mode-toggle")
-    const recentlyViewedSection = document.getElementById("recently-viewed")
+    // Authentication logic
+    const storedLogin = localStorage.getItem("isLoggedIn");
+    const storedUsername = localStorage.getItem("username");
+
+    if (storedLogin === "true" && storedUsername) {
+        console.log("Login state restored from localStorage");
+        isLoggedIn = true;
+        currentUsername = storedUsername;
+    }
+
+    updateAuthDisplay();
+
+    // Restaurant data logic
+    const container = document.getElementById("restaurants-container");
+    const boroughFilter = document.getElementById("borough-filter");
+    const categoryFilter = document.getElementById("category-filter");
+    const clearFiltersButton = document.getElementById("clear-filters");
+    const searchInput = document.getElementById("search-input");
+    const searchButton = document.getElementById("search-button");
+    const listViewBtn = document.getElementById("list-view-btn");
+    const mapViewBtn = document.getElementById("map-view-btn");
+    const mapContainer = document.getElementById("map-container");
+    const restaurantsContainer = document.getElementById("restaurants-container");
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
+    const recentlyViewedSection = document.getElementById("recently-viewed");
+
+    document.getElementById("auth-form").addEventListener("submit", function (e) {
+        e.preventDefault(); // Prevent the default form submission
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        // Call the login function
+        login(username, password);
+    });
 
     // Store all restaurants for filtering
     let allRestaurants = []
@@ -238,6 +437,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     return
                 }
                 addToRecentlyViewed(restaurant)
+
+                const restaurantId = restaurant.id
+                window.location.href = `http://localhost:8080/restaurant-detail.html?id=${restaurantId}`
             })
 
             container.appendChild(card)
@@ -278,7 +480,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const ratingCount = card.querySelector(".rating-count")
 
             if (ratings[restaurantId]) {
-                const { averageRating, count } = ratings[restaurantId]
+                const {averageRating, count} = ratings[restaurantId]
                 updateStars(starsContainer, averageRating)
                 ratingCount.textContent = `(${count} rating${count !== 1 ? "s" : ""})`
             }
@@ -402,7 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ?.closest(".restaurant-card")
 
                 if (mainCard) {
-                    mainCard.scrollIntoView({ behavior: "smooth" })
+                    mainCard.scrollIntoView({behavior: "smooth"})
                     mainCard.classList.add("highlight")
                     setTimeout(() => {
                         mainCard.classList.remove("highlight")
@@ -438,4 +640,3 @@ document.addEventListener("DOMContentLoaded", () => {
         setupRecentlyViewed()
     }
 })
-
