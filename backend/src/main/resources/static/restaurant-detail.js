@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     continue;
                 }
                 const user = await userResponse.json();
-                const username = (user && user.username) ? user.username : `User ${review.userID}`;
+                const username = (user && user.username) ? user.username : `User  ${review.userID}`;
 
                 const reviewCard = document.createElement("div");
                 reviewCard.classList.add("review-card");
@@ -140,4 +140,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return starsContainer.outerHTML;
     }
+
+    const reviewForm = document.getElementById("review-form");
+    reviewForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const reviewText = document.getElementById("review-text").value;
+        const rating = document.getElementById("rating").value;
+
+        // Call the function to submit the review
+        submitReview(restaurantId, reviewText, rating);
+    });
 });
+
+// Function to submit the review
+function submitReview(restaurantId, reviewText, rating) {
+    const userId = localStorage.getItem("userId"); // Retrieve user ID from localStorage
+    if (!userId) {
+        alert("Please log in to submit a review.");
+        return;
+    }
+
+    const payload = {
+        userID: parseInt(userId), // Use the retrieved user ID
+        restaurantID: restaurantId,
+        review: reviewText,
+        rating: parseInt(rating)
+    };
+
+    fetch("/api/reviews", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert("Review submitted successfully!");
+            fetchReviews(restaurantId);
+        })
+        .catch(error => {
+            console.error("Error submitting review:", error);
+            alert("There was an error submitting your review. Please try again.");
+        });
+}
