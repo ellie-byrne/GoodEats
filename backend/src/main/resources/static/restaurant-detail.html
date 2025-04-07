@@ -10,7 +10,6 @@
 <header>
     <h1>GoodEats</h1>
     <p>Restaurant Details</p>
-
     <div class="theme-toggle">
         <label class="switch">
             <input type="checkbox" id="dark-mode-toggle">
@@ -18,7 +17,6 @@
         </label>
         <span class="theme-label">Dark Mode</span>
     </div>
-
     <nav class="tabs">
         <ul>
             <li><a href="index.html">Restaurants</a></li>
@@ -34,34 +32,17 @@
 </div>
 
 <main>
-    <div class="container">
+    <div class="container two-column-layout">
         <div id="restaurant-detail-container" class="restaurant-detail-container">
-            <div class="loading">Loading reviews...</div>
+            <div class="loading">Loading restaurant details...</div>
         </div>
 
-        <div id="review-form-container">
-            <h3>Submit a Review</h3>
-            <form id="review-form">
-                <textarea id="review-text" placeholder="Write your review here..." required></textarea>
+        <div id="user-review-container" class="user-review-container"></div>
+    </div>
 
-                <label for="rating">Rating:</label>
-                <div class="restaurant-rating">
-                    <div class="stars" id="review-stars" data-rating="0">
-                        <span class="star" data-value="1">★</span>
-                        <span class="star" data-value="2">★</span>
-                        <span class="star" data-value="3">★</span>
-                        <span class="star" data-value="4">★</span>
-                        <span class="star" data-value="5">★</span>
-                    </div>
-                </div>
-
-                <button type="submit">Submit Review</button>
-            </form>
-        </div>
-
-
-        <div id="reviews-container" class="reviews-container">
-            <h3>Reviews:</h3>
+    <div id="reviews-container" class="reviews-container">
+        <h3>Reviews:</h3>
+        <div class="review-grid">
             <div class="loading">Loading reviews...</div>
         </div>
     </div>
@@ -79,13 +60,11 @@
         <form id="auth-form">
             <input type="text" id="username" name="username" placeholder="Username" required />
             <input type="password" id="password" name="password" placeholder="Password" required />
-            <!-- Email field for sign-up -->
             <input type="email" id="email" name="email" placeholder="Email" style="display: none;" />
             <button type="submit">Submit</button>
         </form>
         <p id="auth-toggle-text">
-            Don't have an account?
-            <a href="#" onclick="switchAuthMode()">Sign up</a>
+            Don't have an account? <a href="#" onclick="switchAuthMode()">Sign up</a>
         </p>
     </div>
 </div>
