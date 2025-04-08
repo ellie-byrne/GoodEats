@@ -35,8 +35,14 @@ public class ReviewService {
         Review existing = reviewRepository.findById(id).orElse(null);
         if (existing == null) return null;
 
-        existing.setReview(reviewText);
-        existing.setRating(rating);
+        if (reviewText != null && !reviewText.trim().isEmpty()) {
+            existing.setReview(reviewText);
+        }
+
+        if (rating != null) {
+            existing.setRating(rating);
+        }
+
         return reviewRepository.save(existing);
     }
 }

@@ -66,10 +66,31 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="restaurant-rating">${stars}</div>
                     <div class="review-photo-placeholder">[ Photo Placeholder ]</div>
                     <button id="edit-review-btn">Edit Review</button>
+                    <button id="delete-review-btn" class="danger">Delete Review</button>
                 </div>
             `;
+
             document.getElementById("edit-review-btn").addEventListener("click", () => {
                 renderReviewForm(true);
+            });
+
+            document.getElementById("delete-review-btn").addEventListener("click", () => {
+                if (confirm("Are you sure you want to delete your review?")) {
+                    fetch(`/api/reviews/${review.id}`, {
+                        method: "DELETE"
+                    })
+                        .then(res => {
+                            if (res.ok) {
+                                location.reload();
+                            } else {
+                                alert("Failed to delete review.");
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Delete error:", err);
+                            alert("Error deleting review.");
+                        });
+                }
             });
         } else {
             renderReviewForm(); // Logged in, no review

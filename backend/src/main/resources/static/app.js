@@ -165,14 +165,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // DISPLAY RESTAURANTS
-    function displayRestaurants(restaurants) {
-        const favourites = JSON.parse(localStorage.getItem("goodEatsFavourites")) || []
-
-        const favouriteIds = favourites.reduce((map, restaurant) => {
-            const id = restaurant.id || restaurant._id
-            if (id) map[id] = true
-            return map
-        }, {})
+    async function displayRestaurants(restaurants) {
+        const userId = localStorage.getItem("userId");
+        const favouriteIds = {};
 
         container.innerHTML = ""
 
@@ -181,13 +176,20 @@ document.addEventListener("DOMContentLoaded", () => {
             return
         }
 
-        restaurants.forEach((restaurant) => {
+        for (const restaurant of restaurants) {
             const name = restaurant.Name || restaurant.name || "Unnamed Restaurant";
             const type = restaurant.Category || restaurant.type || "Restaurant";
             const borough = restaurant.Borough || restaurant.borough || "";
             const imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
             const restaurantId = restaurant.id || restaurant._id;
-            const isFavourite = favouriteIds[restaurantId] || false;
+
+            let isFavourite = false;
+            if (userId) {
+                const reviewRes = await fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`);
+                const reviews = await reviewRes.json();
+                const userReview = reviews.find(r => r.userID === parseInt(userId));
+                isFavourite = userReview?.favourite === true;
+            }
 
             const card = document.createElement("div");
             card.className = "restaurant-card";
@@ -233,28 +235,43 @@ document.addEventListener("DOMContentLoaded", () => {
             setupRatingCard(card, restaurantId);
 
             container.appendChild(card);
-        });
+
+            const favouriteButton = card.querySelector(".favourite-button");
+            favouriteButton.addEventListener("click", (e) => {
+                e.stopPropagation(); // Prevent triggering the card redirect
+                toggleFavourite(restaurant, favouriteButton); // This should still be defined
+            });
+        }
     }
 
     // FAVOURITE FUNCTIONALITY
     function toggleFavourite(restaurant, button) {
-        const favourites = JSON.parse(localStorage.getItem("goodEatsFavourites")) || []
-        const restaurantId = restaurant.id || restaurant._id
+        const userId = localStorage.getItem("userId");
+        if (!userId) return alert("Login to manage favourites");
 
-        const existingIndex = favourites.findIndex((fav) => {
-            const favId = fav.id || fav._id
-            return favId === restaurantId
-        })
+        const restaurantId = restaurant.id || restaurant._id;
 
-        if (existingIndex >= 0) {
-            favourites.splice(existingIndex, 1)
-            button.classList.remove("active")
-        } else {
-            favourites.push(restaurant)
-            button.classList.add("active")
-        }
+        // Fetch the user's review for this restaurant
+        fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+            .then(res => res.json())
+            .then(reviews => {
+                const userReview = reviews.find(r => r.userID === parseInt(userId));
+                if (!userReview) {
+                    alert("You need to leave a rating or review first to mark it as favourite.");
+                    return;
+                }
 
-        localStorage.setItem("goodEatsFavourites", JSON.stringify(favourites))
+                const newFavourite = !userReview.favourite;
+                fetch(`http://localhost:8080/api/reviews/${userReview.id}/favourite`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ favourite: newFavourite })
+                })
+                    .then(res => res.json())
+                    .then(() => {
+                        button.classList.toggle("active", newFavourite);
+                    });
+            });
     }
 
     function updateStars(container, rating) {
@@ -275,48 +292,70 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(reviews => {
                 const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
                 const avg = reviews.length > 0 ? (total / reviews.length).toFixed(1) : 0;
-                updateStars(starsContainer, avg);
+
+                // 🧼 Remove existing average span if present
+                const existingAvg = card.querySelector(".avg-rating");
+                if (existingAvg) existingAvg.remove();
+
+                // 🏷️ Append average rating next to restaurant name
+                const nameEl = card.querySelector(".restaurant-name");
+                const avgSpan = document.createElement("span");
+                avgSpan.className = "avg-rating";
+                avgSpan.style.fontSize = "14px";
+                avgSpan.style.fontWeight = "normal";
+                avgSpan.style.marginLeft = "10px";
+                avgSpan.textContent = `(Average ${avg} Stars)`;
+                nameEl.appendChild(avgSpan);
+
+                // 🩶 Default to grey stars
+                updateStars(starsContainer, 0);
                 ratingText.textContent = `(${reviews.length} rating${reviews.length !== 1 ? "s" : ""})`;
 
                 if (userId) {
                     const existing = reviews.find(r => r.userID === parseInt(userId));
-                    if (existing) starsContainer.dataset.userReviewId = existing.id;
+                    if (existing) {
+                        starsContainer.dataset.userReviewId = existing.id;
+                        updateStars(starsContainer, existing.rating);
+                    }
+
+                    // Allow the logged-in user to rate
+                    starsContainer.querySelectorAll(".star").forEach(star => {
+                        star.addEventListener("click", e => {
+                            e.stopPropagation();
+                            const value = parseInt(star.dataset.value);
+                            const reviewId = starsContainer.dataset.userReviewId;
+
+                            const payload = {
+                                userID: parseInt(userId),
+                                restaurantID: parseInt(restaurantId),
+                                review: "",
+                                rating: value
+                            };
+
+                            const url = reviewId ? `/api/reviews/${reviewId}` : `/api/reviews`;
+                            const method = reviewId ? "PUT" : "POST";
+
+                            fetch(url, {
+                                method,
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(payload)
+                            })
+                                .then(res => res.json())
+                                .then(() => {
+                                    showRatingConfirmation(value);
+                                    setupRatingCard(card, restaurantId); // refresh
+                                })
+                                .catch(err => {
+                                    console.error("Rating error:", err);
+                                    alert("Failed to submit rating.");
+                                });
+                        });
+                    });
+                } else {
+                    // Prevent interaction for non-logged-in users
+                    starsContainer.style.pointerEvents = "none";
                 }
             });
-
-        starsContainer.querySelectorAll(".star").forEach(star => {
-            star.addEventListener("click", e => {
-                e.stopPropagation();
-                if (!userId) return alert("Log in to rate!");
-
-                const value = parseInt(star.dataset.value);
-                const reviewId = starsContainer.dataset.userReviewId;
-                const payload = {
-                    userID: parseInt(userId),
-                    restaurantID: parseInt(restaurantId),
-                    review: "",
-                    rating: value
-                };
-
-                const url = reviewId ? `/api/reviews/${reviewId}` : `/api/reviews`;
-                const method = reviewId ? "PUT" : "POST";
-
-                fetch(url, {
-                    method,
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                })
-                    .then(res => res.json())
-                    .then(() => {
-                        showRatingConfirmation(value);
-                        setupRatingCard(card, restaurantId);
-                    })
-                    .catch(err => {
-                        console.error("Rating error:", err);
-                        alert("Failed to submit rating.");
-                    });
-            });
-        });
     }
 
     function showRatingConfirmation(rating) {
