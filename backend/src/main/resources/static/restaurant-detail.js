@@ -120,12 +120,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderReviews(reviews) {
-        if (!reviews || reviews.length === 0) {
+        const filteredReviews = reviews.filter(r => r.review && r.review.trim() !== "");
+
+        if (!filteredReviews || filteredReviews.length === 0) {
             reviewsGrid.innerHTML = "<p>No reviews yet.</p>";
             return;
         }
 
-        reviews.forEach(review => {
+        filteredReviews.forEach(review => {
             fetch(`http://localhost:8080/api/users/${review.userID}`)
                 .then(res => res.json())
                 .then(user => {

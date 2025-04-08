@@ -20,7 +20,7 @@ public class ReviewService {
 
     public Review createReview(Integer userID, Integer restaurantID, String review, Integer rating) {
         int nextId = getNextSequence("reviewId"); // Generate the next ID
-        Review newReview = new Review(nextId, userID, restaurantID, new Date(), review, rating);
+        Review newReview = new Review(nextId, userID, restaurantID, new Date(), review, rating, false);
         return reviewRepository.save(newReview);
     }
 

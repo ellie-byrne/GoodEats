@@ -43,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
             displayRestaurants(restaurants)
             setupDarkMode()
             setupSearch()
-            setupRatings()
             setupRecentlyViewed()
         })
         .catch((error) => {
@@ -183,29 +182,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         restaurants.forEach((restaurant) => {
-            const name = restaurant.Name || restaurant.name || "Unnamed Restaurant"
-            const type = restaurant.Category || restaurant.type || "Restaurant"
-            const borough = restaurant.Borough || restaurant.borough || ""
+            const name = restaurant.Name || restaurant.name || "Unnamed Restaurant";
+            const type = restaurant.Category || restaurant.type || "Restaurant";
+            const borough = restaurant.Borough || restaurant.borough || "";
+            const imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
+            const restaurantId = restaurant.id || restaurant._id;
+            const isFavourite = favouriteIds[restaurantId] || false;
 
-            const imageUrl =
-                restaurant.storePhoto ||
-                "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg"
-
-            const restaurantId = restaurant.id || restaurant._id
-            const isFavourite = favouriteIds[restaurantId] || false
-
-            // Create the card element
-            const card = document.createElement("div")
-            card.className = "restaurant-card"
+            const card = document.createElement("div");
+            card.className = "restaurant-card";
 
             card.innerHTML = `
-                <img src="${imageUrl}" alt="${name}" class="restaurant-image" 
-                    onerror="this.src='https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg'">
+                <img src="${imageUrl}" alt="${name}" class="restaurant-image">
                 <div class="restaurant-info">
                     <h2 class="restaurant-name">${name}</h2>
                     <span class="restaurant-type">${type}</span>
                     <p class="restaurant-borough">${borough}</p>
-                    
                     <div class="restaurant-rating">
                         <div class="stars" data-rating="0">
                             <span class="star" data-value="1">★</span>
@@ -216,36 +208,32 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <span class="rating-count">(0 ratings)</span>
                     </div>
-                    
-                    ${
-                restaurant.link
-                    ? `<a href="${restaurant.link}" class="restaurant-link" target="_blank">Visit Website</a>`
-                    : ""
-            }
                     <button class="favourite-button ${isFavourite ? "active" : ""}" data-id="${restaurantId}">★</button>
                 </div>
-            `
+            `;
 
-            const favouriteButton = card.querySelector(".favourite-button")
-            favouriteButton.addEventListener("click", (e) => {
-                e.stopPropagation() // Prevent card click
-                toggleFavourite(restaurant, favouriteButton)
-            })
-
-            // Add click event to the card for recently viewed
             card.addEventListener("click", (e) => {
+                console.log("Card clicked:", name);
+
                 if (e.target.closest(".favourite-button") || e.target.closest(".star")) {
-                    return
+                    return;
                 }
-                addToRecentlyViewed(restaurant)
 
-                const restaurantId = restaurant.id
-                window.location.href = `http://localhost:8080/restaurant-detail.html?id=${restaurantId}`
-            })
+                addToRecentlyViewed(restaurant);
 
-            container.appendChild(card)
-        })
-        setupRatings()
+                const restId = restaurant.id || restaurant._id;
+                if (!restId) {
+                    console.error("Missing restaurant ID for redirect.");
+                    return;
+                }
+
+                window.location.href = `http://localhost:8080/restaurant-detail.html?id=${restId}`;
+            });
+
+            setupRatingCard(card, restaurantId);
+
+            container.appendChild(card);
+        });
     }
 
     // FAVOURITE FUNCTIONALITY
@@ -269,100 +257,74 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("goodEatsFavourites", JSON.stringify(favourites))
     }
 
-    // RATING FUNCTIONALITY
-    function setupRatings() {
-        // Load existing ratings from localStorage
-        const ratings = JSON.parse(localStorage.getItem("goodEatsRatings")) || {}
+    function updateStars(container, rating) {
+        const rounded = Math.round(rating);
+        container.dataset.rating = rounded;
+        container.querySelectorAll(".star").forEach(star => {
+            star.classList.toggle("active", parseInt(star.dataset.value) <= rounded);
+        });
+    }
 
-        // Update restaurant cards with ratings
-        document.querySelectorAll(".restaurant-card").forEach((card) => {
-            const restaurantId = card.querySelector(".favourite-button").dataset.id
-            const starsContainer = card.querySelector(".stars")
-            const ratingCount = card.querySelector(".rating-count")
+    function setupRatingCard(card, restaurantId) {
+        const userId = localStorage.getItem("userId");
+        const starsContainer = card.querySelector(".stars");
+        const ratingText = card.querySelector(".rating-count");
 
-            if (ratings[restaurantId]) {
-                const {averageRating, count} = ratings[restaurantId]
-                updateStars(starsContainer, averageRating)
-                ratingCount.textContent = `(${count} rating${count !== 1 ? "s" : ""})`
-            }
+        fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+            .then(res => res.json())
+            .then(reviews => {
+                const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+                const avg = reviews.length > 0 ? (total / reviews.length).toFixed(1) : 0;
+                updateStars(starsContainer, avg);
+                ratingText.textContent = `(${reviews.length} rating${reviews.length !== 1 ? "s" : ""})`;
 
-            card.querySelectorAll(".star").forEach((star) => {
-                star.addEventListener("click", (e) => {
-                    e.stopPropagation() // Prevent card click
-                    const value = Number.parseInt(star.dataset.value)
-                    rateRestaurant(restaurantId, value, starsContainer, ratingCount)
+                if (userId) {
+                    const existing = reviews.find(r => r.userID === parseInt(userId));
+                    if (existing) starsContainer.dataset.userReviewId = existing.id;
+                }
+            });
+
+        starsContainer.querySelectorAll(".star").forEach(star => {
+            star.addEventListener("click", e => {
+                e.stopPropagation();
+                if (!userId) return alert("Log in to rate!");
+
+                const value = parseInt(star.dataset.value);
+                const reviewId = starsContainer.dataset.userReviewId;
+                const payload = {
+                    userID: parseInt(userId),
+                    restaurantID: parseInt(restaurantId),
+                    review: "",
+                    rating: value
+                };
+
+                const url = reviewId ? `/api/reviews/${reviewId}` : `/api/reviews`;
+                const method = reviewId ? "PUT" : "POST";
+
+                fetch(url, {
+                    method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
                 })
-            })
-        })
-    }
-
-    function updateStars(starsContainer, rating) {
-        starsContainer.dataset.rating = rating
-
-        const stars = starsContainer.querySelectorAll(".star")
-        stars.forEach((star) => {
-            const value = Number.parseInt(star.dataset.value)
-            if (value <= rating) {
-                star.classList.add("active")
-            } else {
-                star.classList.remove("active")
-            }
-        })
-    }
-
-    function rateRestaurant(restaurantId, rating, starsContainer, ratingCountElement) {
-        // Get existing ratings
-        const ratings = JSON.parse(localStorage.getItem("goodEatsRatings")) || {}
-
-        // Update or create rating for this restaurant
-        if (!ratings[restaurantId]) {
-            ratings[restaurantId] = {
-                totalRating: rating,
-                count: 1,
-                averageRating: rating,
-            }
-        } else {
-            ratings[restaurantId].totalRating += rating
-            ratings[restaurantId].count += 1
-            ratings[restaurantId].averageRating = ratings[restaurantId].totalRating / ratings[restaurantId].count
-        }
-
-        // Save updated ratings
-        localStorage.setItem("goodEatsRatings", JSON.stringify(ratings))
-
-        // Update UI
-        updateStars(starsContainer, ratings[restaurantId].averageRating)
-        const count = ratings[restaurantId].count
-        ratingCountElement.textContent = `(${count} rating${count !== 1 ? "s" : ""})`
-
-        // Show confirmation message
-        showRatingConfirmation(rating)
+                    .then(res => res.json())
+                    .then(() => {
+                        showRatingConfirmation(value);
+                        setupRatingCard(card, restaurantId);
+                    })
+                    .catch(err => {
+                        console.error("Rating error:", err);
+                        alert("Failed to submit rating.");
+                    });
+            });
+        });
     }
 
     function showRatingConfirmation(rating) {
-        const message = document.createElement("div")
-        message.className = "rating-confirmation"
-        message.textContent = `Thanks for rating ${rating} stars!`
-
-        message.style.position = "fixed"
-        message.style.bottom = "20px"
-        message.style.right = "20px"
-        message.style.backgroundColor = "#ff6b6b"
-        message.style.color = "white"
-        message.style.padding = "10px 20px"
-        message.style.borderRadius = "4px"
-        message.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.2)"
-        message.style.zIndex = "1000"
-
-        document.body.appendChild(message)
-
-        setTimeout(() => {
-            message.style.opacity = "0"
-            message.style.transition = "opacity 0.5s"
-            setTimeout(() => {
-                document.body.removeChild(message)
-            }, 500)
-        }, 3000)
+        const msg = document.createElement("div");
+        msg.textContent = `Thanks for rating ${rating} stars!`;
+        msg.className = "rating-confirmation";
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2500);
     }
 
     // RECENTLY VIEWED FUNCTIONALITY
