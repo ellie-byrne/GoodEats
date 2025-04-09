@@ -6,10 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearFiltersButton = document.getElementById("clear-filters");
     const searchInput = document.getElementById("search-input");
     const searchButton = document.getElementById("search-button");
-    const listViewBtn = document.getElementById("list-view-btn");
-    const mapViewBtn = document.getElementById("map-view-btn");
-    const mapContainer = document.getElementById("map-container");
-    const restaurantsContainer = document.getElementById("restaurants-container");
     const darkModeToggle = document.getElementById("dark-mode-toggle");
     const recentlyViewedSection = document.getElementById("recently-viewed");
 
@@ -293,11 +289,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
                 const avg = reviews.length > 0 ? (total / reviews.length).toFixed(1) : 0;
 
-                // 🧼 Remove existing average span if present
                 const existingAvg = card.querySelector(".avg-rating");
                 if (existingAvg) existingAvg.remove();
 
-                // 🏷️ Append average rating next to restaurant name
                 const nameEl = card.querySelector(".restaurant-name");
                 const avgSpan = document.createElement("span");
                 avgSpan.className = "avg-rating";
@@ -307,7 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 avgSpan.textContent = `(Average ${avg} Stars)`;
                 nameEl.appendChild(avgSpan);
 
-                // 🩶 Default to grey stars
                 updateStars(starsContainer, 0);
                 ratingText.textContent = `(${reviews.length} rating${reviews.length !== 1 ? "s" : ""})`;
 

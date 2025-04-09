@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +23,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private RestaurantRepository restaurantRepository;
+
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Integer id) {
         Optional<User> user = userRepository.findById(id);
@@ -27,6 +37,15 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/{userId}/favourites")
+    public List<Restaurant> getUserFavourites(@PathVariable int userId) {
+        List<Review> favReviews = reviewRepository.findByUserIDAndFavourite(userId, true);
+        List<Integer> restaurantIds = favReviews.stream()
+                .map(Review::getRestaurantID)
+                .collect(Collectors.toList());
+        return restaurantRepository.findAllById(restaurantIds);
     }
 
     @PostMapping("/signup")

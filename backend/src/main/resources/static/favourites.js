@@ -2,174 +2,185 @@ document.addEventListener("DOMContentLoaded", () => {
     const favouritesContainer = document.getElementById("favourites-container");
     const darkModeToggle = document.getElementById("dark-mode-toggle");
 
-    setupDarkMode(darkModeToggle); // Pass the toggle element to the function
+    setupDarkMode(darkModeToggle);
 
-    // Retrieve favorites from local storage
-    const favourites = JSON.parse(localStorage.getItem("goodEatsFavourites")) || [];
-    console.log("Favourites loaded:", favourites); // Debugging line
-
-    // Check if there are any favourites
-    if (favourites.length === 0) {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
         favouritesContainer.innerHTML = `
             <div class="no-favourites">
                 <h2>Your Favourites</h2>
-                <p>You haven't added any favourite restaurants yet.</p>
+                <p>Please log in to view your favourite restaurants.</p>
                 <a href="index.html" class="button">Browse Restaurants</a>
             </div>
         `;
-        return; // Exit if no favourites
+        return;
     }
 
-    // Clear the container before adding new cards
-    favouritesContainer.innerHTML = "";
+    // Fetch favourites from backend
+    fetch(`http://localhost:8080/api/users/${userId}/favourites`)
+        .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch favourites");
+            return res.json();
+        })
+        .then(favourites => {
+            if (!favourites || favourites.length === 0) {
+                favouritesContainer.innerHTML = `
+                    <div class="no-favourites">
+                        <h2>Your Favourites</h2>
+                        <p>You haven't added any favourite restaurants yet.</p>
+                        <a href="index.html" class="button">Browse Restaurants</a>
+                    </div>
+                `;
+                return;
+            }
 
-    // Create and append restaurant cards for each favourite
-    favourites.forEach((restaurant) => {
-        const card = createRestaurantCard(restaurant);
-        favouritesContainer.appendChild(card);
-    });
-
-    // Setup ratings after cards are created
-    setupRatings();
+            favouritesContainer.innerHTML = "";
+            favourites.forEach(restaurant => {
+                const card = createRestaurantCard(restaurant);
+                favouritesContainer.appendChild(card);
+                setupRatingCard(card, restaurant.id || restaurant._id);
+            });
+        })
+        .catch(err => {
+            console.error("Error loading favourites:", err);
+            favouritesContainer.innerHTML = `
+                <div class="error">
+                    <p>Failed to load your favourites. Please try again later.</p>
+                </div>
+            `;
+        });
 });
 
 // DARK MODE FUNCTIONALITY
-function setupDarkMode(darkModeToggle) { // Accept darkModeToggle as an argument
-    const darkModeEnabled = localStorage.getItem("darkModeEnabled") === "true";
-
-    if (darkModeEnabled) {
+function setupDarkMode(toggle) {
+    const enabled = localStorage.getItem("darkModeEnabled") === "true";
+    if (enabled) {
         document.body.classList.add("dark-mode");
-        darkModeToggle.checked = true;
+        toggle.checked = true;
     }
 
-    darkModeToggle.addEventListener("change", () => {
-        if (darkModeToggle.checked) {
-            document.body.classList.add("dark-mode");
-            localStorage.setItem("darkModeEnabled", "true");
-        } else {
-            document.body.classList.remove("dark-mode");
-            localStorage.setItem("darkModeEnabled", "false");
-        }
+    toggle.addEventListener("change", () => {
+        document.body.classList.toggle("dark-mode", toggle.checked);
+        localStorage.setItem("darkModeEnabled", toggle.checked ? "true" : "false");
     });
 }
 
-// RATING FUNCTIONALITY
-function setupRatings() {
-    const ratings = JSON.parse(localStorage.getItem("goodEatsRatings")) || {}
+// DISPLAY RATING FROM BACKEND
+function setupRatingCard(card, restaurantId) {
+    const userId = localStorage.getItem("userId");
+    const starsContainer = card.querySelector(".stars");
+    const ratingText = card.querySelector(".rating-count");
 
-    // Update restaurant cards with ratings
-    document.querySelectorAll(".restaurant-card").forEach((card) => {
-        const restaurantId = card.querySelector(".favourite-button").dataset.id
-        const starsContainer = card.querySelector(".stars")
-        const ratingCount = card.querySelector(".rating-count")
+    fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+        .then(res => res.json())
+        .then(reviews => {
+            const total = reviews.reduce((sum, r) => sum + (r.rating || 0), 0);
+            const avg = reviews.length ? (total / reviews.length).toFixed(1) : "0.0";
 
-        if (ratings[restaurantId]) {
-            const { averageRating, count } = ratings[restaurantId]
-            updateStars(starsContainer, averageRating)
-            ratingCount.textContent = `(${count} rating${count !== 1 ? "s" : ""})`
-        }
+            const nameEl = card.querySelector(".restaurant-name");
+            const existingAvg = card.querySelector(".avg-rating");
+            if (existingAvg) existingAvg.remove();
 
-        // Add event listeners to stars
-        card.querySelectorAll(".star").forEach((star) => {
-            star.addEventListener("click", (e) => {
-                e.stopPropagation() // Prevent card click
-                const value = Number.parseInt(star.dataset.value)
-                rateRestaurant(restaurantId, value, starsContainer, ratingCount)
-            })
-        })
-    })
+            const avgSpan = document.createElement("span");
+            avgSpan.className = "avg-rating";
+            avgSpan.style.fontSize = "14px";
+            avgSpan.style.fontWeight = "normal";
+            avgSpan.style.marginLeft = "10px";
+            avgSpan.textContent = `(Average ${avg} Stars)`;
+            nameEl.appendChild(avgSpan);
+
+            updateStars(starsContainer, 0); // Start fresh
+            ratingText.textContent = `(${reviews.length} rating${reviews.length !== 1 ? "s" : ""})`;
+
+            if (userId) {
+                const existing = reviews.find(r => r.userID === parseInt(userId));
+                if (existing) {
+                    starsContainer.dataset.userReviewId = existing.id;
+                    updateStars(starsContainer, existing.rating);
+                }
+
+                starsContainer.querySelectorAll(".star").forEach(star => {
+                    star.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        const value = parseInt(star.dataset.value);
+                        const reviewId = starsContainer.dataset.userReviewId;
+
+                        const payload = {
+                            userID: parseInt(userId),
+                            restaurantID: parseInt(restaurantId),
+                            review: "",
+                            rating: value
+                        };
+
+                        const url = reviewId ? `/api/reviews/${reviewId}` : `/api/reviews`;
+                        const method = reviewId ? "PUT" : "POST";
+
+                        fetch(url, {
+                            method,
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload)
+                        })
+                            .then(res => res.json())
+                            .then(() => {
+                                showRatingConfirmation(value);
+                                setupRatingCard(card, restaurantId); // Refresh
+                            })
+                            .catch(err => {
+                                console.error("Rating error:", err);
+                                alert("Failed to submit rating.");
+                            });
+                    });
+                });
+            } else {
+                starsContainer.style.pointerEvents = "none";
+            }
+        });
 }
 
-function updateStars(starsContainer, rating) {
-    starsContainer.dataset.rating = rating
-
-    const stars = starsContainer.querySelectorAll(".star")
-    stars.forEach((star) => {
-        const value = Number.parseInt(star.dataset.value)
-        if (value <= rating) {
-            star.classList.add("active")
-        } else {
-            star.classList.remove("active")
-        }
-    })
-}
-
-function rateRestaurant(restaurantId, rating, starsContainer, ratingCountElement) {
-    // Get existing ratings
-    const ratings = JSON.parse(localStorage.getItem("goodEatsRatings")) || {}
-
-    if (!ratings[restaurantId]) {
-        ratings[restaurantId] = {
-            totalRating: rating,
-            count: 1,
-            averageRating: rating,
-        }
-    } else {
-        ratings[restaurantId].totalRating += rating
-        ratings[restaurantId].count += 1
-        ratings[restaurantId].averageRating = ratings[restaurantId].totalRating / ratings[restaurantId].count
-    }
-
-    // Save updated ratings
-    localStorage.setItem("goodEatsRatings", JSON.stringify(ratings))
-
-    updateStars(starsContainer, ratings[restaurantId].averageRating)
-    const count = ratings[restaurantId].count
-    ratingCountElement.textContent = `(${count} rating${count !== 1 ? "s" : ""})`
-
-    showRatingConfirmation(rating)
+function updateStars(container, rating) {
+    const rounded = Math.round(rating);
+    container.dataset.rating = rounded;
+    container.querySelectorAll(".star").forEach(star => {
+        star.classList.toggle("active", parseInt(star.dataset.value) <= rounded);
+    });
 }
 
 function showRatingConfirmation(rating) {
-    // Create a temporary message
-    const message = document.createElement("div")
-    message.className = "rating-confirmation"
-    message.textContent = `Thanks for rating ${rating} stars!`
-
-    // Style the message
-    message.style.position = "fixed"
-    message.style.bottom = "20px"
-    message.style.right = "20px"
-    message.style.backgroundColor = "#ff6b6b"
-    message.style.color = "white"
-    message.style.padding = "10px 20px"
-    message.style.borderRadius = "4px"
-    message.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.2)"
-    message.style.zIndex = "1000"
-
-    // Add to document
-    document.body.appendChild(message)
-
-    // Remove after 3 seconds
+    const message = document.createElement("div");
+    message.className = "rating-confirmation";
+    message.textContent = `Thanks for rating ${rating} stars!`;
+    Object.assign(message.style, {
+        position: "fixed",
+        bottom: "20px",
+        right: "20px",
+        backgroundColor: "#ff6b6b",
+        color: "white",
+        padding: "10px 20px",
+        borderRadius: "4px",
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+        zIndex: "1000"
+    });
+    document.body.appendChild(message);
     setTimeout(() => {
-        message.style.opacity = "0"
-        message.style.transition = "opacity 0.5s"
-        setTimeout(() => {
-            document.body.removeChild(message)
-        }, 500)
-    }, 3000)
+        message.style.opacity = "0";
+        message.style.transition = "opacity 0.5s";
+        setTimeout(() => document.body.removeChild(message), 500);
+    }, 3000);
 }
 
-// Function to create restaurant card
 function createRestaurantCard(restaurant) {
     const card = document.createElement("div");
     card.className = "restaurant-card";
 
-    // Use default values if properties are missing
     const name = restaurant.name || restaurant.Name || "Unnamed Restaurant";
     const type = restaurant.category || restaurant.type || restaurant.Category || "Restaurant";
     const borough = restaurant.borough || restaurant.Borough || "";
-    const imageUrl =
-        restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
+    const imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
+    const restaurantId = restaurant.id || restaurant._id;
 
-    // Create a new Image object to preload
-    const img = new Image();
-    img.src = imageUrl;
-
-    // Create HTML structure for the card
     card.innerHTML = `
-        <img src="${imageUrl}" alt="${name}" class="restaurant-image" 
-            onerror="this.src='https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg'">
+        <img src="${imageUrl}" alt="${name}" class="restaurant-image"
+             onerror="this.src='https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg'">
         <div class="restaurant-info">
             <h2 class="restaurant-name">${name}</h2>
             <span class="restaurant-type">${type}</span>
@@ -184,41 +195,53 @@ function createRestaurantCard(restaurant) {
                 </div>
                 <span class="rating-count">(0 ratings)</span>
             </div>
-            <button class="favourite-button active" data-id="${restaurant.id || restaurant._id}">★</button>
+            <button class="favourite-button active" data-id="${restaurantId}">★</button>
         </div>
     `;
 
-    // Add event listener to the favorite button
-    const favouriteButton = card.querySelector(".favourite-button");
-    favouriteButton.addEventListener("click", () => {
-        removeFromFavourites(restaurant);
-        card.remove();
-
-        // If no favourites left, show the default message
-        const remainingCards = document.querySelectorAll(".restaurant-card");
-        if (remainingCards.length === 0) {
-            favouritesContainer.innerHTML = `
-                <div class="no-favourites">
-                    <h2>Your Favourites</h2>
-                    <p>You haven't added any favourite restaurants yet.</p>
-                    <a href="index.html" class="button">Browse Restaurants</a>
-                </div>
-            `;
+    card.addEventListener("click", (e) => {
+        if (e.target.closest(".favourite-button") || e.target.closest(".star")) {
+            return; // prevent conflict with rating/favourite click
         }
+        window.location.href = `restaurant-detail.html?id=${restaurantId}`;
+    });
+
+    const favButton = card.querySelector(".favourite-button");
+    favButton.addEventListener("click", (e) => {
+        e.stopPropagation(); // prevent card click
+        unfavouriteRestaurant(restaurant, card);
     });
 
     return card;
 }
 
-// Function to remove from favourites
-function removeFromFavourites(restaurant) {
-    const favourites = JSON.parse(localStorage.getItem("goodEatsFavourites")) || [];
+function unfavouriteRestaurant(restaurant, card) {
+    const userId = localStorage.getItem("userId");
     const restaurantId = restaurant.id || restaurant._id;
 
-    const updatedFavourites = favourites.filter((fav) => {
-        const favId = fav.id || fav._id;
-        return favId !== restaurantId;
-    });
+    fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+        .then(res => res.json())
+        .then(reviews => {
+            const userReview = reviews.find(r => r.userID === parseInt(userId));
+            if (!userReview) return;
 
-    localStorage.setItem("goodEatsFavourites", JSON.stringify(updatedFavourites));
+            fetch(`http://localhost:8080/api/reviews/${userReview.id}/favourite`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ favourite: false })
+            })
+                .then(() => {
+                    card.remove();
+                    const remaining = document.querySelectorAll(".restaurant-card");
+                    if (remaining.length === 0) {
+                        document.getElementById("favourites-container").innerHTML = `
+                            <div class="no-favourites">
+                                <h2>Your Favourites</h2>
+                                <p>You haven't added any favourite restaurants yet.</p>
+                                <a href="index.html" class="button">Browse Restaurants</a>
+                            </div>
+                        `;
+                    }
+                });
+        });
 }

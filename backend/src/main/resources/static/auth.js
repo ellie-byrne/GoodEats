@@ -95,7 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// The login and signup functions remain unchanged
 function login(username, password) {
     fetch("/api/users/login", {
         method: "POST",
@@ -132,24 +131,32 @@ function signup(username, password, email) {
     };
 
     fetch("/api/users/signup", {
-        method: 'POST',
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json"
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(userData)
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json().then(err => {
+                    throw new Error(err.message || "Signup failed.");
+                });
             }
             return response.json();
         })
         .then(data => {
-            alert(data.message);
-            return login(username, password);
+            storeLogin(username, data.userId || 0);
+            toggleAuthModal();
         })
         .catch(error => {
             console.error("Error during signup:", error);
-            alert("Something went wrong during signup. Check the console for more details.");
+            const errorMessageEl = document.getElementById("signup-error-message");
+            if (errorMessageEl) {
+                errorMessageEl.textContent = error.message;
+                errorMessageEl.classList.remove("hidden");
+            } else {
+                alert(error.message); // fallback
+            }
         });
 }
