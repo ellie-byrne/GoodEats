@@ -1,18 +1,19 @@
 package org.example.Services;
 
+import org.example.Models.Counter;
 import org.example.Models.Review;
-import org.example.Respositories.ReviewRepository;
+import org.example.Repositories.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
 @Service
-public class ReviewService {
+public abstract class ReviewService {
 
     @Autowired
     private ReviewRepository reviewRepository;
@@ -21,8 +22,18 @@ public class ReviewService {
     private MongoTemplate mongoTemplate;
 
     public Review createReview(Integer userID, Integer restaurantID, String review, Integer rating) {
-        int nextId = getNextSequence("reviewId"); // Generate the next ID
-        Review newReview = new Review(nextId, userID, restaurantID, new Date(), review, rating, false);
+        int nextId = getNextSequence("reviewId");
+
+        // Create a new Review object using setter methods instead of constructor
+        Review newReview = new Review();
+        newReview.setId(nextId);
+        newReview.setUserID(userID);
+        newReview.setRestaurantID(restaurantID);
+        newReview.setDate(new Date());
+        newReview.setReview(review);
+        newReview.setRating(rating);
+        newReview.setFavourite(false);
+
         return reviewRepository.save(newReview);
     }
 
@@ -47,4 +58,8 @@ public class ReviewService {
 
         return reviewRepository.save(existing);
     }
+
+    public abstract Review createReview(int userID, int restaurantID, String review, int rating);
+
+    public abstract Review updateReview(int id, String review, Integer rating);
 }

@@ -1,9 +1,11 @@
-package org.example.Respositories;
+package org.example.Repositories;
 
 import org.example.Models.Review;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface ReviewRepository extends MongoRepository<Review, Integer> { // Change String to Integer
+    List<Review> findByRestaurantID(int restaurantID);
+
     List<Review> findByRestaurantID(Integer restaurantID);
 }

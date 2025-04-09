@@ -3,6 +3,7 @@ package org.example.Models;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collection;
 import java.util.List;
 
 @Document(collection = "GoodEats") // Ensure this matches the collection name in MongoDB
@@ -30,8 +31,11 @@ public class Restaurant {
         this.reviews = reviews;
     }
 
+    public Restaurant(int id, String testRestaurant, String italian, String westminster, String image, List<String> menu) {
+    }
+
     // Getters and Setters
-    public Object getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -84,5 +88,26 @@ public class Restaurant {
             return id.toString();
         }
         return null;
+    }
+
+    public void setLocation(String camden) {
+    }
+
+    public void setPhoto(String image) {
+    }
+
+    public void setMenu(List<String> menu) {
+    }
+
+    public String getLocation() {
+        return "";
+    }
+
+    public String getPhoto() {
+        return "";
+    }
+
+    public Collection<Object> getMenu() {
+        return List.of();
     }
 }

@@ -1,4 +1,4 @@
-package org.example.Respositories;
+package org.example.Repositories;
 
 import org.example.Models.Restaurant;
 import org.springframework.data.mongodb.repository.MongoRepository;

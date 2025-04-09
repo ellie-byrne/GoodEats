@@ -1,7 +1,7 @@
 package org.example.Controllers;
 
 import org.example.Models.Review;
-import org.example.Respositories.ReviewRepository;
+import org.example.Repositories.ReviewRepository;
 import org.example.Services.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

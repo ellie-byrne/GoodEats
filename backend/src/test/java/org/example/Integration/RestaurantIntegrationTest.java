@@ -1,83 +1,72 @@
-// src/test/java/org/example/RestaurantIntegrationTest.java
 package org.example.Integration;
 
 import org.example.Models.Restaurant;
-import org.example.Respositories.RestaurantRepository;
+import org.example.Repositories.RestaurantRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.ArrayList;
 
-import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class RestaurantIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Autowired
     private RestaurantRepository restaurantRepository;
 
-    @Test
-    void getAllRestaurants() throws Exception {
-        // Arrange
-        Restaurant restaurant1 = new Restaurant();
-        restaurant1.setId(1);
-        restaurant1.setName("Test Restaurant 1");
-        restaurant1.setType("Italian");
-        restaurant1.setBorough("Manhattan");
+    @BeforeEach
+    public void setup() {
+        restaurantRepository.deleteAll();
 
-        Restaurant restaurant2 = new Restaurant();
-        restaurant2.setId(2);
-        restaurant2.setName("Test Restaurant 2");
-        restaurant2.setType("Chinese");
-        restaurant2.setBorough("Brooklyn");
+        Restaurant restaurant1 = new Restaurant(1, "Test Restaurant 1", "Italian", "Westminster", "photo1.jpg", new ArrayList<>());
+        Restaurant restaurant2 = new Restaurant(2, "Test Restaurant 2", "Chinese", "Camden", "photo2.jpg", new ArrayList<>());
 
-        when(restaurantRepository.findAll()).thenReturn(Arrays.asList(restaurant1, restaurant2));
-
-        // Act & Assert
-        mockMvc.perform(get("/api/restaurants")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].name", is("Test Restaurant 1")))
-                .andExpect(jsonPath("$[0].type", is("Italian")))
-                .andExpect(jsonPath("$[1].name", is("Test Restaurant 2")))
-                .andExpect(jsonPath("$[1].type", is("Chinese")));
+        restaurantRepository.save(restaurant1);
+        restaurantRepository.save(restaurant2);
     }
 
     @Test
-    void getRestaurantById() throws Exception {
-        // Arrange
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(1);
-        restaurant.setName("Test Restaurant");
-        restaurant.setType("Italian");
-        restaurant.setBorough("Manhattan");
-
-        when(restaurantRepository.findById(1)).thenReturn(Optional.of(restaurant));
-        when(restaurantRepository.findById(999)).thenReturn(Optional.empty());
-
-        // Act & Assert - Success case
-        mockMvc.perform(get("/api/restaurants/1")
+    public void testGetAllRestaurants() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/restaurants")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", is("Test Restaurant")))
-                .andExpect(jsonPath("$.type", is("Italian")));
+                .andReturn();
 
-        // Act & Assert - Not found case
+        String content = result.getResponse().getContentAsString();
+        assertTrue(content.contains("Test Restaurant 1"));
+        assertTrue(content.contains("Test Restaurant 2"));
+    }
+
+    @Test
+    public void testGetRestaurantById() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/restaurants/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertTrue(content.contains("Test Restaurant 1"));
+        assertTrue(content.contains("Italian"));
+    }
+
+    @Test
+    public void testGetRestaurantById_NotFound() throws Exception {
         mockMvc.perform(get("/api/restaurants/999")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());

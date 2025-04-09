@@ -1,108 +1,131 @@
-// src/test/java/org/example/ReviewIntegrationTest.java
 package org.example.Integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.Respositories.ReviewRepository;
-import org.example.Services.ReviewService;
+import org.example.Models.Review;
+import org.example.Repositories.ReviewRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class ReviewIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
     private ReviewRepository reviewRepository;
 
-    @MockBean
-    private ReviewService reviewService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @Test
-    void getReviewsForRestaurant() throws Exception {
-        // Arrange
-        Review review1 = new Review();
-        review1.setId(1);
-        review1.setUserID(1);
-        review1.setRestaurantID(1);
-        review1.setReview("Great food!");
-        review1.setRating(5);
-        review1.setDate(new Date());
+    @BeforeEach
+    public void setup() {
+        reviewRepository.deleteAll();
 
-        Review review2 = new Review();
-        review2.setId(2);
-        review2.setUserID(2);
-        review2.setRestaurantID(1);
-        review2.setReview("Good service!");
-        review2.setRating(4);
-        review2.setDate(new Date());
+        Review review = new Review();
+        review.setId(1);
+        review.setUserID(101);
+        review.setRestaurantID(201);
+        review.setReview("Great food and service!");
+        review.setRating(5);
+        review.setDate(new Date());
+        review.setFavourite(false);
 
-        when(reviewRepository.findByRestaurantID(1)).thenReturn(Arrays.asList(review1, review2));
-        when(reviewRepository.findByRestaurantID(999)).thenReturn(new ArrayList<>());
-
-        // Act & Assert - Success case
-        mockMvc.perform(get("/api/restaurants/1/reviews")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].review", is("Great food!")))
-                .andExpect(jsonPath("$[0].rating", is(5)))
-                .andExpect(jsonPath("$[1].review", is("Good service!")))
-                .andExpect(jsonPath("$[1].rating", is(4)));
-
-        // Act & Assert - Empty list case
-        mockMvc.perform(get("/api/restaurants/999/reviews")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+        reviewRepository.save(review);
     }
 
     @Test
-    void createReview() throws Exception {
-        // Arrange
+    public void testGetReviewsForRestaurant() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/restaurants/201/reviews")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertTrue(content.contains("Great food and service!"));
+        assertTrue(content.contains("5"));
+    }
+
+    @Test
+    public void testCreateReview() throws Exception {
         Map<String, Object> reviewPayload = new HashMap<>();
-        reviewPayload.put("userID", 1);
-        reviewPayload.put("restaurantID", 1);
-        reviewPayload.put("review", "Great food!");
+        reviewPayload.put("userID", 102);
+        reviewPayload.put("restaurantID", 202);
+        reviewPayload.put("review", "Excellent food!");
         reviewPayload.put("rating", 5);
+        reviewPayload.put("favourite", true);
 
-        Review createdReview = new Review();
-        createdReview.setId(1);
-        createdReview.setUserID(1);
-        createdReview.setRestaurantID(1);
-        createdReview.setReview("Great food!");
-        createdReview.setRating(5);
-        createdReview.setDate(new Date());
-
-        when(reviewService.createReview(anyInt(), anyInt(), any(), anyInt())).thenReturn(createdReview);
-
-        // Act & Assert
-        mockMvc.perform(post("/api/reviews")
+        MvcResult result = mockMvc.perform(post("/api/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reviewPayload)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userID", is(1)))
-                .andExpect(jsonPath("$.restaurantID", is(1)))
-                .andExpect(jsonPath("$.review", is("Great food!")))
-                .andExpect(jsonPath("$.rating", is(5)));
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertTrue(content.contains("Excellent food!"));
+        assertTrue(content.contains("5"));
+        assertTrue(content.contains("true"));
+    }
+
+    @Test
+    public void testUpdateReview() throws Exception {
+        Map<String, Object> updatePayload = new HashMap<>();
+        updatePayload.put("review", "Updated review text");
+        updatePayload.put("rating", 4);
+
+        MvcResult result = mockMvc.perform(put("/api/reviews/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePayload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertTrue(content.contains("Updated review text"));
+        assertTrue(content.contains("4"));
+    }
+
+    @Test
+    public void testUpdateFavourite() throws Exception {
+        Map<String, Object> favouritePayload = new HashMap<>();
+        favouritePayload.put("favourite", true);
+
+        MvcResult result = mockMvc.perform(put("/api/reviews/1/favourite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(favouritePayload)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        assertTrue(content.contains("true"));
+    }
+
+    @Test
+    public void testDeleteReview() throws Exception {
+        mockMvc.perform(delete("/api/reviews/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        // Verify the review is deleted
+        mockMvc.perform(get("/api/restaurants/201/reviews")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
     }
 }

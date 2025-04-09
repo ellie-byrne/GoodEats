@@ -1,60 +1,16 @@
-package org.example;
+package org.example.Services;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.example.Models.Counter;
+import org.example.Models.User;
+import org.example.Repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
-@Document(collection = "counters")
-@Data
-class Counter {
-    private String id;
-    private int seq;
-
-    // Constructors
-    public Counter() {
-    }
-
-    public Counter(String id, int seq) {
-        this.id = id;
-        this.seq = seq;
-    }
-
-    // Getters and Setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public int getSeq() {
-        return seq;
-    }
-
-    public void setSeq(int seq) {
-        this.seq = seq;
-    }
-
-    @Override
-    public String toString() {
-        return "Counter{" +
-                "id='" + id + '\'' +
-                ", seq=" + seq +
-                '}';
-    }
-}
 
 @Service
 public class UserService {
