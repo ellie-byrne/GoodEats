@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.Restaurant;
+import org.example.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,9 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -45,10 +48,61 @@ public class RestaurantController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @GetMapping("/restaurants/{id}")
     public ResponseEntity<Restaurant> getRestaurantById(@PathVariable Integer id) {
         return restaurantRepository.findById(id)
                 .map(restaurant -> new ResponseEntity<>(restaurant, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PostMapping("/restaurants")
+    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Restaurant restaurant) {
+        try {
+            logger.info("Creating new restaurant: {}", restaurant.getName());
+
+            // Find the highest existing ID and increment it by 1
+            Integer newId = 1;
+            List<Restaurant> restaurants = restaurantRepository.findAll();
+            if (!restaurants.isEmpty()) {
+                for (Restaurant r : restaurants) {
+                    if (r.getId() != null) {
+                        Integer id = (Integer) r.getId();
+                        if (id >= newId) {
+                            newId = id + 1;
+                        }
+                    }
+                }
+            }
+
+            restaurant.setId(newId);
+            Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+            logger.info("Restaurant created with ID: {}", savedRestaurant.getId());
+
+            return new ResponseEntity<>(savedRestaurant, HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.error("Error creating restaurant: {}", e.getMessage(), e);
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/restaurants/{id}")
+    public ResponseEntity<HttpStatus> deleteRestaurant(@PathVariable Integer id) {
+        try {
+            logger.info("Deleting restaurant with ID: {}", id);
+
+            if (!restaurantRepository.existsById(id)) {
+                logger.warn("Restaurant with ID {} not found", id);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            restaurantRepository.deleteById(id);
+            logger.info("Restaurant with ID {} deleted successfully", id);
+
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            logger.error("Error deleting restaurant: {}", e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
