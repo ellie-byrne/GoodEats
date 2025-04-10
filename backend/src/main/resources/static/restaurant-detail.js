@@ -77,7 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     <h3>Your Review</h3>
                     <p>${review.review}</p>
                     <div class="restaurant-rating">${stars}</div>
-                    <div class="review-photo-placeholder">[ Photo Placeholder ]</div>
                     <button id="edit-review-btn">Edit Review</button>
                     <button id="delete-review-btn" class="danger">Delete Review</button>
                 </div>
@@ -172,7 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="restaurant-rating">${generateStars(review.rating)}</div>
                         <p><strong>Review:</strong> ${review.review}</p>
                         <p><small>Date: ${new Date(review.date).toLocaleDateString()}</small></p>
-                        <div class="review-photo-placeholder">[ Photo Placeholder ]</div>
                     `;
                     reviewsGrid.appendChild(card);
                 });

@@ -175,8 +175,20 @@ function createRestaurantCard(restaurant) {
     const name = restaurant.name || restaurant.Name || "Unnamed Restaurant";
     const type = restaurant.category || restaurant.type || restaurant.Category || "Restaurant";
     const borough = restaurant.borough || restaurant.Borough || "";
-    const imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
+    let imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
     const restaurantId = restaurant.id || restaurant._id;
+
+    if (restaurantId == 2) {
+        imageUrl = "/GScanteen.webp";
+    } else if (restaurantId == 1) {
+        imageUrl = "/wasabi.jpg";
+    } else if (restaurantId == 3) {
+        imageUrl = "/CiaoBella.jpg";
+    } else if (restaurantId == 4) {
+        imageUrl = "/braza.jpg";
+    } else if (restaurantId == 5) {
+        imageUrl = "/Frankie.avif";
+    }
 
     card.innerHTML = `
         <img src="${imageUrl}" alt="${name}" class="restaurant-image"
