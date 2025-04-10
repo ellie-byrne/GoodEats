@@ -176,8 +176,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const name = restaurant.Name || restaurant.name || "Unnamed Restaurant";
             const type = restaurant.Category || restaurant.type || "Restaurant";
             const borough = restaurant.Borough || restaurant.borough || "";
-            const imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
+            let imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
             const restaurantId = restaurant.id || restaurant._id;
+
+            if (restaurantId == 2) {
+                imageUrl = "/GScanteen.webp";
+            } else if (restaurantId == 1) {
+                imageUrl = "/wasabi.jpg";
+            } else if (restaurantId == 3) {
+                imageUrl = "/CiaoBella.jpg";
+            } else if (restaurantId == 4) {
+                imageUrl = "/braza.jpg";
+            } else if (restaurantId == 5) {
+                imageUrl = "/Frankie.avif";
+            }
 
             let isFavourite = false;
             if (userId) {
@@ -377,9 +389,23 @@ document.addEventListener("DOMContentLoaded", () => {
         recentlyViewed.slice(0, 5).forEach((restaurant) => {
             const name = restaurant.Name || restaurant.name || "Unnamed Restaurant"
             const type = restaurant.Category || restaurant.type || "Restaurant"
-            const imageUrl =
+            let imageUrl =
                 restaurant.storePhoto ||
                 "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg"
+            const restaurantId = restaurant.id || restaurant._id;
+
+            if (restaurantId == 2) {
+                imageUrl = "/GScanteen.webp";
+            } else if (restaurantId == 1) {
+                imageUrl = "/wasabi.jpg";
+            } else if (restaurantId == 3) {
+                imageUrl = "/CiaoBella.jpg";
+            } else if (restaurantId == 4) {
+                imageUrl = "/braza.jpg";
+            } else if (restaurantId == 5) {
+                imageUrl = "/Frankie.avif";
+            }
+
 
             const card = document.createElement("div")
             card.className = "recent-restaurant-card"
