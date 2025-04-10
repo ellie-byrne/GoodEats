@@ -1,10 +1,9 @@
-package org.example;
+package org.example.model;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "Users")
+@Document(collection = "users")
 public class User {
     @Id
     private Integer id;
@@ -16,7 +15,7 @@ public class User {
     public User() {
     }
 
-    // Constructor with all parameters
+    // Parameterized constructor
     public User(Integer id, String username, String password, String email) {
         this.id = id;
         this.username = username;
@@ -24,7 +23,7 @@ public class User {
         this.email = email;
     }
 
-    // Getters and Setters
+    // Getters and setters
     public Integer getId() {
         return id;
     }
