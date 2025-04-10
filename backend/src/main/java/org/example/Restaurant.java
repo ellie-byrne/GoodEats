@@ -14,6 +14,7 @@ public class Restaurant {
     private String type;
     private String Borough; // Updated to match the new format
     private String storePhoto;
+    private String image;
     private List<Review> reviews; // This can be updated to link to the new Reviews collection
 
     // Default constructor
@@ -31,6 +32,14 @@ public class Restaurant {
     }
 
     // Getters and Setters
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     public Object getId() {
         return id;
     }

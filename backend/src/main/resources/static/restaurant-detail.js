@@ -23,7 +23,21 @@ document.addEventListener("DOMContentLoaded", () => {
             const name = restaurant.name || "Unnamed Restaurant";
             const borough = restaurant.borough || "";
             const type = restaurant.type || "Restaurant";
-            const photo = restaurant.storePhoto || "https://via.placeholder.com/300x200?text=Restaurant+Photo";
+            const id = restaurant.id || restaurant._id;
+
+            let photo = restaurant.storePhoto || "https://via.placeholder.com/300x200?text=Restaurant+Photo";
+
+            if (id === 2) {
+                imageUrl = "/public/GScanteen.webp";
+            } else if (id === 1) {
+                imageUrl = "/public/wasabi.jpg";
+            } else if (id === 3) {
+                imageUrl = "/public/CiaoBella.jpg";
+            } else if (id === 4) {
+                imageUrl = "/public/braza.jpg";
+            } else if (id === 5) {
+                imageUrl = "/public/Frankie.avif";
+            }
 
             restaurantDetailContainer.innerHTML = `
                 <img src="${photo}" alt="${name}" class="restaurant-image">

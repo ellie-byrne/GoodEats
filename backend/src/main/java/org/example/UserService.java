@@ -21,6 +21,33 @@ class Counter {
     @Id
     private String id;
     private int seq;
+
+    // Default constructor
+    public Counter() {
+    }
+
+    // Constructor with all parameters
+    public Counter(String id, int seq) {
+        this.id = id;
+        this.seq = seq;
+    }
+
+    // Getters and Setters
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public int getSeq() {
+        return seq;
+    }
+
+    public void setSeq(int seq) {
+        this.seq = seq;
+    }
 }
 
 @Service

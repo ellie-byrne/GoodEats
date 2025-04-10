@@ -1,18 +1,12 @@
 package org.example;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
-@Document(collection = "Reviews") // Updated to match the new collection name
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Document(collection = "Reviews")
 public class Review {
     @Id
     private Integer id;
@@ -22,4 +16,76 @@ public class Review {
     private String review;
     private int rating;
     private boolean favourite = false;
+
+    // Default constructor
+    public Review() {
+    }
+
+    // Constructor with all parameters
+    public Review(Integer id, Integer userID, Integer restaurantID, Date date, String review, Integer rating, boolean favourite) {
+        this.id = id;
+        this.userID = userID;
+        this.restaurantID = restaurantID;
+        this.date = date;
+        this.review = review;
+        this.rating = rating;
+        this.favourite = favourite;
+    }
+
+    // Getters and Setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getUserID() {
+        return userID;
+    }
+
+    public void setUserID(Integer userID) {
+        this.userID = userID;
+    }
+
+    public Integer getRestaurantID() {
+        return restaurantID;
+    }
+
+    public void setRestaurantID(Integer restaurantID) {
+        this.restaurantID = restaurantID;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public String getReview() {
+        return review;
+    }
+
+    public void setReview(String review) {
+        this.review = review;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public boolean isFavourite() {
+        return favourite;
+    }
+
+    public void setFavourite(Boolean favourite) {
+        this.favourite = favourite;
+    }
 }
