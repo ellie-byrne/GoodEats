@@ -20,12 +20,5 @@ public class Review {
     private Date date;
     private String review;
     private int rating;
-
-    public Review(Integer userID, Integer restaurantID, Date date, String review, Integer rating) {
-        this.userID = userID;
-        this.restaurantID = restaurantID;
-        this.date = date;
-        this.review = review;
-        this.rating = rating;
-    }
+    private boolean favourite = false;
 }

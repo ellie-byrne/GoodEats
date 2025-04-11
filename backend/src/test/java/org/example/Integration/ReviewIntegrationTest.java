@@ -2,6 +2,7 @@
 package org.example.Integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.Models.Review;
 import org.example.Respositories.ReviewRepository;
 import org.example.Services.ReviewService;
 import org.junit.jupiter.api.Test;

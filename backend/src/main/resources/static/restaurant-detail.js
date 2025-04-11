@@ -1,143 +1,211 @@
 document.addEventListener("DOMContentLoaded", () => {
     const restaurantDetailContainer = document.getElementById("restaurant-detail-container");
-    const reviewsContainer = document.getElementById("reviews-container");
+    const userReviewContainer = document.getElementById("user-review-container");
+    const reviewsGrid = document.querySelector(".review-grid");
     const restaurantDetailTab = document.getElementById("restaurant-detail-tab");
 
     setupDarkMode();
 
-    // DARK MODE FUNCTIONALITY
-    function setupDarkMode() {
-        const darkModeToggle = document.getElementById("dark-mode-toggle");
-        const darkModeEnabled = localStorage.getItem("darkModeEnabled") === "true";
-
-        if (darkModeEnabled) {
-            document.body.classList.add("dark-mode");
-            darkModeToggle.checked = true;
-        }
-
-        darkModeToggle.addEventListener("change", () => {
-            if (darkModeToggle.checked) {
-                document.body.classList.add("dark-mode");
-                localStorage.setItem("darkModeEnabled", "true");
-            } else {
-                document.body.classList.remove("dark-mode");
-                localStorage.setItem("darkModeEnabled", "false");
-            }
-        });
-    }
-
-    // Extract restaurant ID from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const restaurantId = urlParams.get("id");
+    const userId = localStorage.getItem("userId");
+
+    let userReview = null;
 
     if (!restaurantId) {
         restaurantDetailContainer.innerHTML = '<div class="error">Restaurant ID not found.</div>';
-        restaurantDetailTab.textContent = "ID Error";
         return;
     }
 
-    // Fetch restaurant details from API using the ID
     fetch(`http://localhost:8080/api/restaurants/${restaurantId}`)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Network response was not ok. Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((restaurant) => {
-            if (!restaurant) {
-                restaurantDetailContainer.innerHTML = '<div class="error">Restaurant not found.</div>';
-                restaurantDetailTab.textContent = "Not Found";
-                return;
-            }
+        .then(res => res.json())
+        .then(restaurant => {
+            const name = restaurant.name || "Unnamed Restaurant";
+            const borough = restaurant.borough || "";
+            const type = restaurant.type || "Restaurant";
+            let imageUrl = restaurant.storePhoto || "https://via.placeholder.com/300x200?text=Restaurant+Photo";
+            const id = restaurant.id || restaurant._id;
 
-            // Display restaurant details
-            const name = restaurant.Name || restaurant.name || "Unnamed Restaurant";
-            const type = restaurant.Category || restaurant.type || "Restaurant";
-            const borough = restaurant.Borough || restaurant.borough || "";
-            const imageUrl =
-                restaurant.storePhoto ||
-                "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
-
-            document.title = `GoodEats - ${name}`;
+            if (id == 2) {
+                imageUrl = "/GScanteen.webp";
+            } else if (id == 1) {
+                imageUrl = "/wasabi.jpg";
+            } else if (id == 3) {
+                imageUrl = "/CiaoBella.jpg";
+            } else if (id == 4) {
+                imageUrl = "/braza.jpg";
+            } else if (id == 5) {
+                imageUrl = "/Frankie.avif";
+            }
 
             restaurantDetailContainer.innerHTML = `
+                <img src="${imageUrl}" alt="${name}" class="restaurant-image">
                 <h2>${name}</h2>
                 <p>Type: ${type}</p>
                 <p>Borough: ${borough}</p>
             `;
             restaurantDetailTab.innerHTML = `<a href="#">${name}</a>`;
-
-            fetchReviews(restaurantId);
-        })
-        .catch((error) => {
-            console.error("Error fetching restaurant details:", error);
-            restaurantDetailContainer.innerHTML = `<div class="error">Error loading restaurant details. Please try again later.</div>`;
-            restaurantDetailTab.textContent = "Fetch Error";
         });
 
-    async function fetchReviews(restaurantId) {
-        reviewsContainer.innerHTML = '<h3>Reviews:</h3><div class="loading">Loading reviews...</div>';
-        try {
-            const response = await fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`);
-            if (!response.ok) {
-                throw new Error(`Error fetching reviews. Status: ${response.status}`);
-            }
-            const reviews = await response.json();
+    fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+        .then(res => res.json())
+        .then(reviews => {
+            reviewsGrid.innerHTML = "";
+            const otherReviews = [];
 
-            reviewsContainer.innerHTML = '<h3>Reviews:</h3>';
-
-            if (Array.isArray(reviews) && reviews.length === 0) {
-                reviewsContainer.innerHTML += "<p>No reviews yet.</p>";
-                return;
-            }
-
-            for (const review of reviews) {
-                const userResponse = await fetch(`http://localhost:8080/api/users/${review.userID}`);
-                if (!userResponse.ok) {
-                    console.error(`Error fetching user with ID ${review.userID}`);
-                    continue;
+            reviews.forEach(review => {
+                if (parseInt(userId) === review.userID) {
+                    userReview = review;
+                } else {
+                    otherReviews.push(review);
                 }
-                const user = await userResponse.json();
-                const username = (user && user.username) ? user.username : `User ${review.userID}`;
+            });
 
-                const reviewCard = document.createElement("div");
-                reviewCard.classList.add("review-card");
+            renderUserReviewSection(userReview);
+            renderReviews(otherReviews);
+        });
 
-                const stars = generateStars(review.rating);
+    function renderUserReviewSection(review) {
+        userReviewContainer.innerHTML = "";
 
-                reviewCard.innerHTML = `
-                <p><strong>${username}</strong></p>
-                <div class="restaurant-rating">
-                    ${stars}
+        if (!userId) {
+            renderReviewForm(); // Not logged in
+        } else if (review) {
+            const stars = generateStars(review.rating);
+            userReviewContainer.innerHTML = `
+                <div class="user-review-box">
+                    <h3>Your Review</h3>
+                    <p>${review.review}</p>
+                    <div class="restaurant-rating">${stars}</div>
+                    <button id="edit-review-btn">Edit Review</button>
+                    <button id="delete-review-btn" class="danger">Delete Review</button>
                 </div>
-                <p><strong>Review:</strong> ${review.review}</p>
-                <p><small>Date: ${new Date(review.date).toLocaleDateString()}</small></p>
             `;
-                reviewsContainer.appendChild(reviewCard);
-            }
-            setupDarkMode();
-        } catch (error) {
-            console.error("Error fetching reviews:", error);
-            reviewsContainer.innerHTML = '<h3>Reviews:</h3><p>Error loading reviews. Please try again later.</p>';
+
+            document.getElementById("edit-review-btn").addEventListener("click", () => {
+                renderReviewForm(true);
+            });
+
+            document.getElementById("delete-review-btn").addEventListener("click", () => {
+                if (confirm("Are you sure you want to delete your review?")) {
+                    fetch(`/api/reviews/${review.id}`, {
+                        method: "DELETE"
+                    })
+                        .then(res => {
+                            if (res.ok) {
+                                location.reload();
+                            } else {
+                                alert("Failed to delete review.");
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Delete error:", err);
+                            alert("Error deleting review.");
+                        });
+                }
+            });
+        } else {
+            renderReviewForm(); // Logged in, no review
         }
     }
 
-    function generateStars(rating) {
-        const starsContainer = document.createElement("div");
-        starsContainer.classList.add("stars", "static-stars");
+    function renderReviewForm(isEditing = false) {
+        userReviewContainer.innerHTML = `
+            <h3>${isEditing ? "Edit Review" : "Submit a Review"}</h3>
+            <form id="review-form">
+                <textarea id="review-text" placeholder="Write your review here..." required>${isEditing ? userReview.review : ""}</textarea>
+                <label>Rating:</label>
+                <div class="restaurant-rating">
+                    <div class="stars" id="review-stars" data-rating="${isEditing ? userReview.rating : 0}">
+                        ${[1,2,3,4,5].map(i => `<span class="star ${i <= (isEditing ? userReview.rating : 0) ? 'active' : ''}" data-value="${i}">★</span>`).join('')}
+                    </div>
+                </div>
+                <button type="submit">${isEditing ? "Update" : "Submit"}</button>
+            </form>
+        `;
 
-        for (let i = 1; i <= 5; i++) {
-            const star = document.createElement("span");
-            star.classList.add("star");
-            if (i <= rating) {
-                star.classList.add("active");
-            }
-            star.dataset.value = i;
-            star.textContent = "★";
-            starsContainer.appendChild(star);
+        setupStarRating();
+
+        document.getElementById("review-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const review = document.getElementById("review-text").value;
+            const rating = parseInt(document.getElementById("review-stars").dataset.rating);
+
+            const payload = {
+                userID: parseInt(userId),
+                restaurantID: parseInt(restaurantId),
+                review,
+                rating
+            };
+
+            const method = isEditing ? "PUT" : "POST";
+            const endpoint = isEditing ? `/api/reviews/${userReview.id}` : "/api/reviews";
+
+            fetch(endpoint, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(() => location.reload())
+                .catch(err => alert("Something went wrong."));
+        });
+    }
+
+    function renderReviews(reviews) {
+        const filteredReviews = reviews.filter(r => r.review && r.review.trim() !== "");
+
+        if (!filteredReviews || filteredReviews.length === 0) {
+            reviewsGrid.innerHTML = "<p>No reviews yet.</p>";
+            return;
         }
 
-        return starsContainer.outerHTML;
+        filteredReviews.forEach(review => {
+            fetch(`http://localhost:8080/api/users/${review.userID}`)
+                .then(res => res.json())
+                .then(user => {
+                    const card = document.createElement("div");
+                    card.classList.add("review-card");
+                    card.innerHTML = `
+                        <p><strong>${user?.username || "User " + review.userID}</strong></p>
+                        <div class="restaurant-rating">${generateStars(review.rating)}</div>
+                        <p><strong>Review:</strong> ${review.review}</p>
+                        <p><small>Date: ${new Date(review.date).toLocaleDateString()}</small></p>
+                    `;
+                    reviewsGrid.appendChild(card);
+                });
+        });
+    }
+
+    function generateStars(rating) {
+        return `<div class="stars static-stars">${[1, 2, 3, 4, 5].map(i =>
+            `<span class="star${i <= rating ? " active" : ""}">★</span>`).join("")}</div>`;
+    }
+
+    function setupStarRating() {
+        const starsContainer = document.getElementById("review-stars");
+        const stars = starsContainer.querySelectorAll(".star");
+
+        stars.forEach(star => {
+            star.addEventListener("click", () => {
+                const value = parseInt(star.dataset.value);
+                starsContainer.dataset.rating = value;
+                stars.forEach(s => s.classList.toggle("active", parseInt(s.dataset.value) <= value));
+            });
+        });
+    }
+
+    function setupDarkMode() {
+        const toggle = document.getElementById("dark-mode-toggle");
+        const enabled = localStorage.getItem("darkModeEnabled") === "true";
+        if (enabled) {
+            document.body.classList.add("dark-mode");
+            toggle.checked = true;
+        }
+
+        toggle.addEventListener("change", () => {
+            document.body.classList.toggle("dark-mode");
+            localStorage.setItem("darkModeEnabled", toggle.checked);
+        });
     }
 });

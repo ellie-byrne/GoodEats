@@ -2,6 +2,7 @@ package org.example.Models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
@@ -12,7 +13,8 @@ public class Restaurant {
 
     private String name;
     private String type;
-    private String Borough; // Updated to match the new format
+    @JsonProperty("Borough")
+    private String Borough;
     private String storePhoto;
     private List<Review> reviews; // This can be updated to link to the new Reviews collection
 

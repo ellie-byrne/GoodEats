@@ -10,7 +10,6 @@
 <header>
     <h1>GoodEats</h1>
     <p>Restaurant Details</p>
-
     <div class="theme-toggle">
         <label class="switch">
             <input type="checkbox" id="dark-mode-toggle">
@@ -18,24 +17,33 @@
         </label>
         <span class="theme-label">Dark Mode</span>
     </div>
-
     <nav class="tabs">
         <ul>
             <li><a href="index.html">Restaurants</a></li>
             <li><a href="favourites.html">Favourites</a></li>
+            <li><a href="manage-restaurants.html">Manage</a></li>
             <li class="active" id="restaurant-detail-tab"><a href="#"></a></li>
         </ul>
     </nav>
 </header>
 
+<div id="auth-status">
+    <button id="login-button" onclick="toggleAuthModal()" style="position: fixed; top: 20px; left: 20px; z-index: 1000;">Login</button>
+    <div id="username-display" style="position: fixed; top: 20px; left: 20px; z-index: 1000; display: none;"></div>
+</div>
+
 <main>
-    <div class="container">
+    <div class="container two-column-layout">
         <div id="restaurant-detail-container" class="restaurant-detail-container">
-            <div class="loading">Loading reviews...</div>
+            <div class="loading">Loading restaurant details...</div>
         </div>
 
-        <div id="reviews-container" class="reviews-container">
-            <h3>Reviews:</h3>
+        <div id="user-review-container" class="user-review-container"></div>
+    </div>
+
+    <div id="reviews-container" class="reviews-container">
+        <h3>Reviews:</h3>
+        <div class="review-grid">
             <div class="loading">Loading reviews...</div>
         </div>
     </div>
@@ -45,6 +53,24 @@
     <p>&copy; 2025 GoodEats</p>
 </footer>
 
+<!-- Login/Signup Modal -->
+<div id="auth-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="toggleAuthModal()">&times;</span>
+        <h2 id="modal-title">Login</h2>
+        <form id="auth-form">
+            <input type="text" id="username" name="username" placeholder="Username" required />
+            <input type="password" id="password" name="password" placeholder="Password" required />
+            <input type="email" id="email" name="email" placeholder="Email" style="display: none;" />
+            <button type="submit">Submit</button>
+        </form>
+        <p id="auth-toggle-text">
+            Don't have an account? <a href="#" onclick="switchAuthMode()">Sign up</a>
+        </p>
+    </div>
+</div>
+
 <script src="restaurant-detail.js"></script>
+<script src="auth.js"></script>
 </body>
 </html>

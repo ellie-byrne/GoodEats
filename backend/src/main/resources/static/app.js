@@ -1,193 +1,4 @@
-let isLogin = true;
-let isLoggedIn = false;
-let currentUsername = null;
-
-function updateAuthDisplay() {
-    console.log("updateAuthDisplay called"); // This should log
-    const loginButton = document.getElementById("login-button");
-    const usernameDisplay = document.getElementById("username-display");
-
-    if (isLoggedIn) {
-        console.log("User  is logged in"); // This should log
-        loginButton.style.display = "none";
-        usernameDisplay.style.display = "block";
-        // Use innerHTML instead of textContent
-        usernameDisplay.innerHTML = `Logged in as: ${currentUsername} <button onclick="logout()">Logout</button>`;
-    } else {
-        console.log("User  is logged out"); // This should log
-        loginButton.style.display = "block";
-        usernameDisplay.style.display = "none";
-    }
-}
-
-function storeLogin(username) {
-    console.log("storeLogin called with username:", username);
-    isLoggedIn = true;
-    currentUsername = username;
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("username", username);
-    console.log("User  logged in:", currentUsername);
-    updateAuthDisplay();
-}
-
-function logout() {
-    isLoggedIn = false;
-    currentUsername = null;
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("username");
-    updateAuthDisplay();
-}
-
-function toggleAuthModal() {
-    const modal = document.getElementById("auth-modal");
-    modal.style.display = modal.style.display === "block" ? "none" : "block";
-}
-
-function switchAuthMode() {
-    isLogin = !isLogin;
-    document.getElementById("modal-title").textContent = isLogin ? "Login" : "Sign Up";
-    document.getElementById("auth-toggle-text").innerHTML = isLogin
-        ? `Don't have an account? <a href="#" onclick="switchAuthMode()">Sign up</a>`
-        : `Already have an account? <a href="#" onclick="switchAuthMode()">Login</a>`;
-
-    const emailInput = document.getElementById("email");
-    emailInput.style.display = isLogin ? "none" : "block";
-}
-
-document.getElementById("auth-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    const email = document.getElementById("email").value;
-
-    if (!username || !password || (isLogin === false && !email)) {
-        alert("Please fill all fields.");
-        return;
-    }
-
-    const userData = {
-        username: username,
-        password: password,
-        email: email
-    };
-
-    const endpoint = isLogin ? "/api/users/login" : "/api/users/signup";
-
-    fetch(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.message) {
-                alert(data.message);
-                if (isLogin) {
-                    storeLogin(username); // Only call this if logging in
-                } else {
-                    // If signup is successful, you might want to log in automatically
-                    return login(username, password); // Call login after successful signup
-                }
-            }
-        })
-        .catch(error => {
-            console.error("Error during fetch:", error);
-            alert("Something went wrong. Check the console for more details.");
-        });
-});
-
-function login(username, password) {
-    console.log("Login function called with username:", username); // Log the username
-    console.log("Payload being sent:", { username, password }); // Log the payload
-
-    fetch("/api/users/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-    })
-        .then((response) => {
-            console.log("Response received:", response); // Log the response
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            console.log("Data received:", data); // Log the data received
-            if (data.message === "Login successful") {
-                console.log("Login success! Calling storeLogin..."); // This should log
-                storeLogin(username);
-                toggleAuthModal();
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-            alert("Something went wrong!");
-        });
-}
-
-// Function to handle user sign-up
-function signup(username, password, email) {
-    const userData = {
-        username: username,
-        password: password,
-        email: email
-    };
-
-    fetch("/api/users/signup", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Signup response:", data);
-            if (data.message) {
-                alert(data.message);
-                // Log in the user after successful signup
-                setTimeout(() => {
-                    return login(username, password);
-                }, 1000); // Wait for 1 second before logging in
-            }
-        })
-        .catch(error => {
-            console.error("Error during signup:", error);
-            alert("Something went wrong during signup. Check the console for more details.");
-        });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-    // Authentication logic
-    const storedLogin = localStorage.getItem("isLoggedIn");
-    const storedUsername = localStorage.getItem("username");
-
-    if (storedLogin === "true" && storedUsername) {
-        console.log("Login state restored from localStorage");
-        isLoggedIn = true;
-        currentUsername = storedUsername;
-    }
-
-    updateAuthDisplay();
-
     // Restaurant data logic
     const container = document.getElementById("restaurants-container");
     const boroughFilter = document.getElementById("borough-filter");
@@ -195,22 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearFiltersButton = document.getElementById("clear-filters");
     const searchInput = document.getElementById("search-input");
     const searchButton = document.getElementById("search-button");
-    const listViewBtn = document.getElementById("list-view-btn");
-    const mapViewBtn = document.getElementById("map-view-btn");
-    const mapContainer = document.getElementById("map-container");
-    const restaurantsContainer = document.getElementById("restaurants-container");
     const darkModeToggle = document.getElementById("dark-mode-toggle");
     const recentlyViewedSection = document.getElementById("recently-viewed");
-
-    document.getElementById("auth-form").addEventListener("submit", function (e) {
-        e.preventDefault(); // Prevent the default form submission
-
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-
-        // Call the login function
-        login(username, password);
-    });
 
     // Store all restaurants for filtering
     let allRestaurants = []
@@ -242,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
             displayRestaurants(restaurants)
             setupDarkMode()
             setupSearch()
-            setupRatings()
             setupRecentlyViewed()
         })
         .catch((error) => {
@@ -365,14 +161,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // DISPLAY RESTAURANTS
-    function displayRestaurants(restaurants) {
-        const favourites = JSON.parse(localStorage.getItem("goodEatsFavourites")) || []
-
-        const favouriteIds = favourites.reduce((map, restaurant) => {
-            const id = restaurant.id || restaurant._id
-            if (id) map[id] = true
-            return map
-        }, {})
+    async function displayRestaurants(restaurants) {
+        const userId = localStorage.getItem("userId");
+        const favouriteIds = {};
 
         container.innerHTML = ""
 
@@ -381,30 +172,42 @@ document.addEventListener("DOMContentLoaded", () => {
             return
         }
 
-        restaurants.forEach((restaurant) => {
-            const name = restaurant.Name || restaurant.name || "Unnamed Restaurant"
-            const type = restaurant.Category || restaurant.type || "Restaurant"
-            const borough = restaurant.Borough || restaurant.borough || ""
+        for (const restaurant of restaurants) {
+            const name = restaurant.Name || restaurant.name || "Unnamed Restaurant";
+            const type = restaurant.Category || restaurant.type || "Restaurant";
+            const borough = restaurant.Borough || restaurant.borough || "";
+            let imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
+            const restaurantId = restaurant.id || restaurant._id;
 
-            const imageUrl =
-                restaurant.storePhoto ||
-                "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg"
+            if (restaurantId == 2) {
+                imageUrl = "/GScanteen.webp";
+            } else if (restaurantId == 1) {
+                imageUrl = "/wasabi.jpg";
+            } else if (restaurantId == 3) {
+                imageUrl = "/CiaoBella.jpg";
+            } else if (restaurantId == 4) {
+                imageUrl = "/braza.jpg";
+            } else if (restaurantId == 5) {
+                imageUrl = "/Frankie.avif";
+            }
 
-            const restaurantId = restaurant.id || restaurant._id
-            const isFavourite = favouriteIds[restaurantId] || false
+            let isFavourite = false;
+            if (userId) {
+                const reviewRes = await fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`);
+                const reviews = await reviewRes.json();
+                const userReview = reviews.find(r => r.userID === parseInt(userId));
+                isFavourite = userReview?.favourite === true;
+            }
 
-            // Create the card element
-            const card = document.createElement("div")
-            card.className = "restaurant-card"
+            const card = document.createElement("div");
+            card.className = "restaurant-card";
 
             card.innerHTML = `
-                <img src="${imageUrl}" alt="${name}" class="restaurant-image" 
-                    onerror="this.src='https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg'">
+                <img src="${imageUrl}" alt="${name}" class="restaurant-image">
                 <div class="restaurant-info">
                     <h2 class="restaurant-name">${name}</h2>
                     <span class="restaurant-type">${type}</span>
                     <p class="restaurant-borough">${borough}</p>
-                    
                     <div class="restaurant-rating">
                         <div class="stars" data-rating="0">
                             <span class="star" data-value="1">★</span>
@@ -415,153 +218,157 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <span class="rating-count">(0 ratings)</span>
                     </div>
-                    
-                    ${
-                restaurant.link
-                    ? `<a href="${restaurant.link}" class="restaurant-link" target="_blank">Visit Website</a>`
-                    : ""
-            }
                     <button class="favourite-button ${isFavourite ? "active" : ""}" data-id="${restaurantId}">★</button>
                 </div>
-            `
+            `;
 
-            const favouriteButton = card.querySelector(".favourite-button")
-            favouriteButton.addEventListener("click", (e) => {
-                e.stopPropagation() // Prevent card click
-                toggleFavourite(restaurant, favouriteButton)
-            })
-
-            // Add click event to the card for recently viewed
             card.addEventListener("click", (e) => {
+                console.log("Card clicked:", name);
+
                 if (e.target.closest(".favourite-button") || e.target.closest(".star")) {
-                    return
+                    return;
                 }
-                addToRecentlyViewed(restaurant)
 
-                const restaurantId = restaurant.id
-                window.location.href = `http://localhost:8080/restaurant-detail.html?id=${restaurantId}`
-            })
+                addToRecentlyViewed(restaurant);
 
-            container.appendChild(card)
-        })
-        setupRatings()
+                const restId = restaurant.id || restaurant._id;
+                if (!restId) {
+                    console.error("Missing restaurant ID for redirect.");
+                    return;
+                }
+
+                window.location.href = `http://localhost:8080/restaurant-detail.html?id=${restId}`;
+            });
+
+            setupRatingCard(card, restaurantId);
+
+            container.appendChild(card);
+
+            const favouriteButton = card.querySelector(".favourite-button");
+            favouriteButton.addEventListener("click", (e) => {
+                e.stopPropagation(); // Prevent triggering the card redirect
+                toggleFavourite(restaurant, favouriteButton); // This should still be defined
+            });
+        }
     }
 
     // FAVOURITE FUNCTIONALITY
     function toggleFavourite(restaurant, button) {
-        const favourites = JSON.parse(localStorage.getItem("goodEatsFavourites")) || []
-        const restaurantId = restaurant.id || restaurant._id
+        const userId = localStorage.getItem("userId");
+        if (!userId) return alert("Login to manage favourites");
 
-        const existingIndex = favourites.findIndex((fav) => {
-            const favId = fav.id || fav._id
-            return favId === restaurantId
-        })
+        const restaurantId = restaurant.id || restaurant._id;
 
-        if (existingIndex >= 0) {
-            favourites.splice(existingIndex, 1)
-            button.classList.remove("active")
-        } else {
-            favourites.push(restaurant)
-            button.classList.add("active")
-        }
+        // Fetch the user's review for this restaurant
+        fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+            .then(res => res.json())
+            .then(reviews => {
+                const userReview = reviews.find(r => r.userID === parseInt(userId));
+                if (!userReview) {
+                    alert("You need to leave a rating or review first to mark it as favourite.");
+                    return;
+                }
 
-        localStorage.setItem("goodEatsFavourites", JSON.stringify(favourites))
-    }
-
-    // RATING FUNCTIONALITY
-    function setupRatings() {
-        // Load existing ratings from localStorage
-        const ratings = JSON.parse(localStorage.getItem("goodEatsRatings")) || {}
-
-        // Update restaurant cards with ratings
-        document.querySelectorAll(".restaurant-card").forEach((card) => {
-            const restaurantId = card.querySelector(".favourite-button").dataset.id
-            const starsContainer = card.querySelector(".stars")
-            const ratingCount = card.querySelector(".rating-count")
-
-            if (ratings[restaurantId]) {
-                const {averageRating, count} = ratings[restaurantId]
-                updateStars(starsContainer, averageRating)
-                ratingCount.textContent = `(${count} rating${count !== 1 ? "s" : ""})`
-            }
-
-            card.querySelectorAll(".star").forEach((star) => {
-                star.addEventListener("click", (e) => {
-                    e.stopPropagation() // Prevent card click
-                    const value = Number.parseInt(star.dataset.value)
-                    rateRestaurant(restaurantId, value, starsContainer, ratingCount)
+                const newFavourite = !userReview.favourite;
+                fetch(`http://localhost:8080/api/reviews/${userReview.id}/favourite`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ favourite: newFavourite })
                 })
-            })
-        })
+                    .then(res => res.json())
+                    .then(() => {
+                        button.classList.toggle("active", newFavourite);
+                    });
+            });
     }
 
-    function updateStars(starsContainer, rating) {
-        starsContainer.dataset.rating = rating
-
-        const stars = starsContainer.querySelectorAll(".star")
-        stars.forEach((star) => {
-            const value = Number.parseInt(star.dataset.value)
-            if (value <= rating) {
-                star.classList.add("active")
-            } else {
-                star.classList.remove("active")
-            }
-        })
+    function updateStars(container, rating) {
+        const rounded = Math.round(rating);
+        container.dataset.rating = rounded;
+        container.querySelectorAll(".star").forEach(star => {
+            star.classList.toggle("active", parseInt(star.dataset.value) <= rounded);
+        });
     }
 
-    function rateRestaurant(restaurantId, rating, starsContainer, ratingCountElement) {
-        // Get existing ratings
-        const ratings = JSON.parse(localStorage.getItem("goodEatsRatings")) || {}
+    function setupRatingCard(card, restaurantId) {
+        const userId = localStorage.getItem("userId");
+        const starsContainer = card.querySelector(".stars");
+        const ratingText = card.querySelector(".rating-count");
 
-        // Update or create rating for this restaurant
-        if (!ratings[restaurantId]) {
-            ratings[restaurantId] = {
-                totalRating: rating,
-                count: 1,
-                averageRating: rating,
-            }
-        } else {
-            ratings[restaurantId].totalRating += rating
-            ratings[restaurantId].count += 1
-            ratings[restaurantId].averageRating = ratings[restaurantId].totalRating / ratings[restaurantId].count
-        }
+        fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+            .then(res => res.json())
+            .then(reviews => {
+                const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+                const avg = reviews.length > 0 ? (total / reviews.length).toFixed(1) : 0;
 
-        // Save updated ratings
-        localStorage.setItem("goodEatsRatings", JSON.stringify(ratings))
+                const existingAvg = card.querySelector(".avg-rating");
+                if (existingAvg) existingAvg.remove();
 
-        // Update UI
-        updateStars(starsContainer, ratings[restaurantId].averageRating)
-        const count = ratings[restaurantId].count
-        ratingCountElement.textContent = `(${count} rating${count !== 1 ? "s" : ""})`
+                const nameEl = card.querySelector(".restaurant-name");
+                const avgSpan = document.createElement("span");
+                avgSpan.className = "avg-rating";
+                avgSpan.style.fontSize = "14px";
+                avgSpan.style.fontWeight = "normal";
+                avgSpan.style.marginLeft = "10px";
+                avgSpan.textContent = `(Average ${avg} Stars)`;
+                nameEl.appendChild(avgSpan);
 
-        // Show confirmation message
-        showRatingConfirmation(rating)
+                updateStars(starsContainer, 0);
+                ratingText.textContent = `(${reviews.length} rating${reviews.length !== 1 ? "s" : ""})`;
+
+                if (userId) {
+                    const existing = reviews.find(r => r.userID === parseInt(userId));
+                    if (existing) {
+                        starsContainer.dataset.userReviewId = existing.id;
+                        updateStars(starsContainer, existing.rating);
+                    }
+
+                    // Allow the logged-in user to rate
+                    starsContainer.querySelectorAll(".star").forEach(star => {
+                        star.addEventListener("click", e => {
+                            e.stopPropagation();
+                            const value = parseInt(star.dataset.value);
+                            const reviewId = starsContainer.dataset.userReviewId;
+
+                            const payload = {
+                                userID: parseInt(userId),
+                                restaurantID: parseInt(restaurantId),
+                                review: "",
+                                rating: value
+                            };
+
+                            const url = reviewId ? `/api/reviews/${reviewId}` : `/api/reviews`;
+                            const method = reviewId ? "PUT" : "POST";
+
+                            fetch(url, {
+                                method,
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(payload)
+                            })
+                                .then(res => res.json())
+                                .then(() => {
+                                    showRatingConfirmation(value);
+                                    setupRatingCard(card, restaurantId); // refresh
+                                })
+                                .catch(err => {
+                                    console.error("Rating error:", err);
+                                    alert("Failed to submit rating.");
+                                });
+                        });
+                    });
+                } else {
+                    // Prevent interaction for non-logged-in users
+                    starsContainer.style.pointerEvents = "none";
+                }
+            });
     }
 
     function showRatingConfirmation(rating) {
-        const message = document.createElement("div")
-        message.className = "rating-confirmation"
-        message.textContent = `Thanks for rating ${rating} stars!`
-
-        message.style.position = "fixed"
-        message.style.bottom = "20px"
-        message.style.right = "20px"
-        message.style.backgroundColor = "#ff6b6b"
-        message.style.color = "white"
-        message.style.padding = "10px 20px"
-        message.style.borderRadius = "4px"
-        message.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.2)"
-        message.style.zIndex = "1000"
-
-        document.body.appendChild(message)
-
-        setTimeout(() => {
-            message.style.opacity = "0"
-            message.style.transition = "opacity 0.5s"
-            setTimeout(() => {
-                document.body.removeChild(message)
-            }, 500)
-        }, 3000)
+        const msg = document.createElement("div");
+        msg.textContent = `Thanks for rating ${rating} stars!`;
+        msg.className = "rating-confirmation";
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2500);
     }
 
     // RECENTLY VIEWED FUNCTIONALITY
@@ -582,9 +389,23 @@ document.addEventListener("DOMContentLoaded", () => {
         recentlyViewed.slice(0, 5).forEach((restaurant) => {
             const name = restaurant.Name || restaurant.name || "Unnamed Restaurant"
             const type = restaurant.Category || restaurant.type || "Restaurant"
-            const imageUrl =
+            let imageUrl =
                 restaurant.storePhoto ||
                 "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg"
+            const restaurantId = restaurant.id || restaurant._id;
+
+            if (restaurantId == 2) {
+                imageUrl = "/GScanteen.webp";
+            } else if (restaurantId == 1) {
+                imageUrl = "/wasabi.jpg";
+            } else if (restaurantId == 3) {
+                imageUrl = "/CiaoBella.jpg";
+            } else if (restaurantId == 4) {
+                imageUrl = "/braza.jpg";
+            } else if (restaurantId == 5) {
+                imageUrl = "/Frankie.avif";
+            }
+
 
             const card = document.createElement("div")
             card.className = "recent-restaurant-card"

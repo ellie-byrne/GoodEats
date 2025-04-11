@@ -117,7 +117,7 @@ public class UserControllerTest {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
 
         // Act
-        ResponseEntity<Map<String, String>> response = userController.login(testUser);
+        ResponseEntity<Map<String, Object>> response = userController.login(testUser);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -130,7 +130,7 @@ public class UserControllerTest {
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
         // Act
-        ResponseEntity<Map<String, String>> response = userController.login(testUser);
+        ResponseEntity<Map<String, Object>> response = userController.login(testUser);
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -147,7 +147,7 @@ public class UserControllerTest {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(storedUser));
 
         // Act
-        ResponseEntity<Map<String, String>> response = userController.login(testUser);
+        ResponseEntity<Map<String, Object>> response = userController.login(testUser);
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());

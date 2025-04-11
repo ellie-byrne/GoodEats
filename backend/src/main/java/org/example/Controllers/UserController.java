@@ -1,12 +1,20 @@
 package org.example.Controllers;
 
+import org.example.Models.Restaurant;
+import org.example.Models.Review;
 import org.example.Models.User;
+import org.example.Respositories.RestaurantRepository;
+import org.example.Respositories.ReviewRepository;
 import org.example.Respositories.UserRepository;
 import org.example.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +30,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private RestaurantRepository restaurantRepository;
+
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Integer id) {
         Optional<User> user = userRepository.findById(id);
@@ -30,6 +44,15 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/{userId}/favourites")
+    public List<Restaurant> getUserFavourites(@PathVariable int userId) {
+        List<Review> favReviews = reviewRepository.findByUserIDAndFavourite(userId, true);
+        List<Integer> restaurantIds = favReviews.stream()
+                .map(Review::getRestaurantID)
+                .collect(Collectors.toList());
+        return restaurantRepository.findAllById(restaurantIds);
     }
 
     @PostMapping("/signup")
@@ -48,9 +71,17 @@ public class UserController {
                 return ResponseEntity.badRequest().body(response);
             }
 
+            // Check if the email already exists
+            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+                response.put("message", "Email already exists.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
             // Save the user
             userService.signUp(user);
-            response.put("message", "User  signed up successfully!");
+            userService.signUp(user);
+            response.put("message", "User signed up successfully!");
+            response.put("userId", String.valueOf(user.getId()));
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,22 +91,22 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody User user) {
+        Map<String, Object> response = new HashMap<>();
         Optional<User> existingUser  = userRepository.findByUsername(user.getUsername());
+
         if (!existingUser .isPresent()) {
-            Map<String, String> response = new HashMap<>();
             response.put("message", "Username not found");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         if (!existingUser .get().getPassword().equals(user.getPassword())) {
-            Map<String, String> response = new HashMap<>();
             response.put("message", "Incorrect password");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        Map<String, String> response = new HashMap<>();
         response.put("message", "Login successful");
+        response.put("userId", existingUser .get().getId()); // Include user ID in response
         return ResponseEntity.ok(response);
     }
 }
