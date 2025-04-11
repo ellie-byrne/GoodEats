@@ -13,6 +13,7 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,6 +33,6 @@ jobs:
       run: mvn -B package --file backend/pom.xml
 
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml -f backend/pom.xml
       env:
         GITHUB_TOKEN: ${{ github.token }}
