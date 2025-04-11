@@ -72,7 +72,9 @@ public class UserController {
 
             // Save the user
             userService.signUp(user);
-            response.put("message", "User  signed up successfully!");
+            userService.signUp(user);
+            response.put("message", "User signed up successfully!");
+            response.put("userId", String.valueOf(user.getId()));
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             e.printStackTrace();
