@@ -146,7 +146,7 @@ function signup(username, password, email) {
             return response.json();
         })
         .then(data => {
-            storeLogin(username, data.userId || 0);
+            storeLogin(username, data.id || 0);
             toggleAuthModal();
         })
         .catch(error => {

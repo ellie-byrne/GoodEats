@@ -3,42 +3,55 @@ package org.example.Controllers;
 import org.example.Models.Review;
 import org.example.Respositories.ReviewRepository;
 import org.example.Services.ReviewService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.DTOs.ReviewDTO;
+import org.example.DTOs.CreateReviewRequest;
+import org.example.DTOs.UpdateReviewRequest;
+import org.example.Mappers.ReviewMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class ReviewController {
 
-    @Autowired
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
+    private final ReviewRepository reviewRepository;
 
-    @Autowired
-    private ReviewRepository reviewRepository;
+    public ReviewController(ReviewService reviewService, ReviewRepository reviewRepository) {
+        this.reviewService = reviewService;
+        this.reviewRepository = reviewRepository;
+    }
 
     @GetMapping("/restaurants/{restaurantID}/reviews")
-    public ResponseEntity<List<Review>> getReviewsForRestaurant(@PathVariable Integer restaurantID) {
+    public ResponseEntity<List<ReviewDTO>> getReviewsForRestaurant(@PathVariable Integer restaurantID) {
         List<Review> reviews = reviewRepository.findByRestaurantID(restaurantID);
-        return ResponseEntity.ok(reviews);
+
+        List<ReviewDTO> dtos = reviews.stream()
+                .map(ReviewMapper::toDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping("/reviews")
-    public ResponseEntity<Review> createReview(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<ReviewDTO> createReview(@RequestBody CreateReviewRequest request) {
         try {
-            Integer userID = (Integer) payload.get("userID");
-            Integer restaurantID = Integer.parseInt(payload.get("restaurantID").toString());
-            String review = (String) payload.get("review");
-            Integer rating = (Integer) payload.get("rating");
-            Boolean favourite = payload.get("favourite") != null && (Boolean) payload.get("favourite");
+            Review newReview = reviewService.createReview(
+                    request.getUserID(),
+                    request.getRestaurantID(),
+                    request.getReview(),
+                    request.getRating()
+            );
+            newReview.setFavourite(request.isFavourite());
 
-            Review newReview = reviewService.createReview(userID, restaurantID, review, rating);
-            newReview.setFavourite(favourite);
-            return new ResponseEntity<>(reviewRepository.save(newReview), HttpStatus.CREATED);
+            Review saved = reviewRepository.save(newReview);
+            return new ResponseEntity<>(ReviewMapper.toDTO(saved), HttpStatus.CREATED);
 
         } catch (Exception e) {
             System.out.println("Error occurred: " + e.getMessage());
@@ -46,34 +59,23 @@ public class ReviewController {
         }
     }
 
-    // Update an existing review
     @PutMapping("/reviews/{id}")
-    public ResponseEntity<Review> updateReview(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<ReviewDTO> updateReview(@PathVariable Integer id, @RequestBody UpdateReviewRequest request) {
         try {
-            String reviewText = (String) payload.get("review");
-            Integer rating = payload.get("rating") != null ? (Integer) payload.get("rating") : null;
-            Boolean favourite = payload.get("favourite") != null ? (Boolean) payload.get("favourite") : null;
-
             Review existing = reviewRepository.findById(id).orElse(null);
-            if (existing == null) {
-                return ResponseEntity.notFound().build();
-            }
+            if (existing == null) return ResponseEntity.notFound().build();
 
-            // Only update fields if values are provided
-            if (reviewText != null && !reviewText.trim().isEmpty()) {
-                existing.setReview(reviewText);
-            }
+            if (request.getReview() != null && !request.getReview().trim().isEmpty())
+                existing.setReview(request.getReview());
 
-            if (rating != null) {
-                existing.setRating(rating);
-            }
+            if (request.getRating() != null)
+                existing.setRating(request.getRating());
 
-            if (favourite != null) {
-                existing.setFavourite(favourite);
-            }
+            if (request.getFavourite() != null)
+                existing.setFavourite(request.getFavourite());
 
             Review updated = reviewRepository.save(existing);
-            return ResponseEntity.ok(updated);
+            return ResponseEntity.ok(ReviewMapper.toDTO(updated));
 
         } catch (Exception e) {
             System.out.println("Update error: " + e.getMessage());
@@ -82,14 +84,16 @@ public class ReviewController {
     }
 
     @PutMapping("/reviews/{id}/favourite")
-    public ResponseEntity<Review> updateFavourite(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<ReviewDTO> updateFavourite(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
         try {
             Boolean favourite = (Boolean) payload.get("favourite");
             Review review = reviewRepository.findById(id).orElse(null);
             if (review == null) return ResponseEntity.notFound().build();
 
             review.setFavourite(favourite);
-            return ResponseEntity.ok(reviewRepository.save(review));
+            Review updated = reviewRepository.save(review);
+            return ResponseEntity.ok(ReviewMapper.toDTO(updated));
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }

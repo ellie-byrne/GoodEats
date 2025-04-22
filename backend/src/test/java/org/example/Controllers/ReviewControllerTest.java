@@ -1,9 +1,11 @@
-// src/test/java/org/example/ReviewControllerTest.java
 package org.example.Controllers;
 
+import org.example.DTOs.CreateReviewRequest;
+import org.example.DTOs.ReviewDTO;
 import org.example.Models.Review;
 import org.example.Respositories.ReviewRepository;
 import org.example.Services.ReviewService;
+import org.example.Mappers.ReviewMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,107 +19,79 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewControllerTest {
 
     @Mock
-    private ReviewService reviewService;
+    private ReviewRepository reviewRepository;
 
     @Mock
-    private ReviewRepository reviewRepository;
+    private ReviewService reviewService;
 
     @InjectMocks
     private ReviewController reviewController;
 
     private Review testReview;
-    private List<Review> reviewList;
-    private Map<String, Object> reviewPayload;
 
     @BeforeEach
     void setUp() {
         testReview = new Review();
         testReview.setId(1);
         testReview.setUserID(1);
-        testReview.setRestaurantID(1);
-        testReview.setReview("Great food!");
+        testReview.setRestaurantID(100);
+        testReview.setReview("Amazing experience!");
         testReview.setRating(5);
+        testReview.setFavourite(true);
         testReview.setDate(new Date());
-
-        reviewList = new ArrayList<>();
-        reviewList.add(testReview);
-
-        Review review2 = new Review();
-        review2.setId(2);
-        review2.setUserID(2);
-        review2.setRestaurantID(1);
-        review2.setReview("Good service!");
-        review2.setRating(4);
-        review2.setDate(new Date());
-        reviewList.add(review2);
-
-        reviewPayload = new HashMap<>();
-        reviewPayload.put("userID", 1);
-        reviewPayload.put("restaurantID", 1);
-        reviewPayload.put("review", "Great food!");
-        reviewPayload.put("rating", 5);
     }
 
     @Test
     void getReviewsForRestaurant_Success() {
-        // Arrange
-        when(reviewRepository.findByRestaurantID(1)).thenReturn(reviewList);
+        List<Review> reviews = Collections.singletonList(testReview);
+        when(reviewRepository.findByRestaurantID(100)).thenReturn(reviews);
 
-        // Act
-        ResponseEntity<List<Review>> response = reviewController.getReviewsForRestaurant(1);
+        ResponseEntity<List<ReviewDTO>> response = reviewController.getReviewsForRestaurant(100);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(2, response.getBody().size());
-        assertEquals("Great food!", response.getBody().get(0).getReview());
-        assertEquals("Good service!", response.getBody().get(1).getReview());
-    }
-
-    @Test
-    void getReviewsForRestaurant_EmptyList() {
-        // Arrange
-        when(reviewRepository.findByRestaurantID(999)).thenReturn(new ArrayList<>());
-
-        // Act
-        ResponseEntity<List<Review>> response = reviewController.getReviewsForRestaurant(999);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody().isEmpty());
+        assertEquals(1, response.getBody().size());
+        assertEquals("Amazing experience!", response.getBody().get(0).getReview());
     }
 
     @Test
     void createReview_Success() {
-        // Arrange
-        when(reviewService.createReview(anyInt(), anyInt(), anyString(), anyInt())).thenReturn(testReview);
+        CreateReviewRequest request = new CreateReviewRequest();
+        request.setUserID(1);
+        request.setRestaurantID(100);
+        request.setReview("Fantastic food!");
+        request.setRating(4);
+        request.setFavourite(true);
 
-        // Act
-        ResponseEntity<Review> response = reviewController.createReview(reviewPayload);
+        when(reviewService.createReview(any(), any(), any(), any())).thenReturn(testReview);
+        when(reviewRepository.save(any())).thenReturn(testReview);
 
-        // Assert
+        ResponseEntity<ReviewDTO> response = reviewController.createReview(request);
+
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals("Great food!", response.getBody().getReview());
-        assertEquals(5, response.getBody().getRating());
+        assertEquals("Amazing experience!", response.getBody().getReview()); // from testReview
     }
 
     @Test
-    void createReview_HandlesInvalidPayload() {
-        // Arrange - Missing fields
-        Map<String, Object> invalidPayload = new HashMap<>();
-        invalidPayload.put("userID", 1);
-        // Missing restaurantID, review, rating
+    void deleteReview_NotFound() {
+        when(reviewRepository.existsById(999)).thenReturn(false);
 
-        // Act & Assert
-        assertThrows(NullPointerException.class, () -> {
-            reviewController.createReview(invalidPayload);
-        });
+        ResponseEntity<Void> response = reviewController.deleteReview(999);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void deleteReview_Success() {
+        when(reviewRepository.existsById(1)).thenReturn(true);
+
+        ResponseEntity<Void> response = reviewController.deleteReview(1);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 }

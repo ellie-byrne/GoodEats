@@ -3,6 +3,7 @@ package org.example.Services;
 import lombok.Data;
 import org.example.Models.User;
 import org.example.Respositories.UserRepository;
+import org.example.Factories.UserFactory;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -10,7 +11,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -43,37 +43,30 @@ class Counter {
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final MongoTemplate mongoTemplate;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    public UserService(UserRepository userRepository, MongoTemplate mongoTemplate) {
+        this.userRepository = userRepository;
+        this.mongoTemplate = mongoTemplate;
+    }
 
-    public String signUp(User user) {
+    public User signUp(User user) {
         if (user.getUsername() == null || user.getPassword() == null || user.getEmail() == null) {
-            return "All fields are required!";
+            throw new IllegalArgumentException("All fields are required!");
         }
 
-        Optional<User> existingUserByUsername = userRepository.findByUsername(user.getUsername());
-        if (existingUserByUsername.isPresent()) {
-            return "Username is already taken.";
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username is already taken.");
         }
 
-        Optional<User> existingUserByEmail = userRepository.findByEmail(user.getEmail());
-        if (existingUserByEmail.isPresent()) {
-            return "Email is already taken.";
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email is already taken.");
         }
 
-        try {
-            int nextId = getNextSequence("userId");
-            user.setId(nextId);
-            userRepository.save(user);
-            return "User signed up successfully!";
-        } catch (Exception e) {
-            System.err.println("Error during signup: " + e.getMessage());
-            e.printStackTrace();
-            return "Database error during signup: " + e.getMessage();
-        }
+        int nextId = getNextSequence("userId");
+        User newUser = UserFactory.create(nextId, user.getUsername(), user.getPassword(), user.getEmail());
+        return userRepository.save(newUser);
     }
 
     private int getNextSequence(String seqName) {

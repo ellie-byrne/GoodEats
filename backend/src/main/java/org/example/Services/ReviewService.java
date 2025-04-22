@@ -2,7 +2,7 @@ package org.example.Services;
 
 import org.example.Models.Review;
 import org.example.Respositories.ReviewRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.Factories.ReviewFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Update;
@@ -14,15 +14,17 @@ import java.util.Date;
 @Service
 public class ReviewService {
 
-    @Autowired
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
+    private final MongoTemplate mongoTemplate;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    public ReviewService(ReviewRepository reviewRepository, MongoTemplate mongoTemplate) {
+        this.reviewRepository = reviewRepository;
+        this.mongoTemplate = mongoTemplate;
+    }
 
     public Review createReview(Integer userID, Integer restaurantID, String review, Integer rating) {
         int nextId = getNextSequence("reviewId"); // Generate the next ID
-        Review newReview = new Review(nextId, userID, restaurantID, new Date(), review, rating, false);
+        Review newReview = ReviewFactory.create(nextId, userID, restaurantID, review, rating, false);
         return reviewRepository.save(newReview);
     }
 
