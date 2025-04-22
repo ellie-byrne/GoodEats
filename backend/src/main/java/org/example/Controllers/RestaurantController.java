@@ -2,88 +2,77 @@ package org.example.Controllers;
 
 import org.example.Models.Restaurant;
 import org.example.Respositories.RestaurantRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.example.DTOs.RestaurantDTO;
+import org.example.Mappers.RestaurantMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-
-// testing pipeline lol
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class RestaurantController {
+
     private static final Logger logger = LoggerFactory.getLogger(RestaurantController.class);
 
-    @Autowired
-    private RestaurantRepository restaurantRepository;
+    private final RestaurantRepository restaurantRepository;
+
+    public RestaurantController(RestaurantRepository restaurantRepository) {
+        this.restaurantRepository = restaurantRepository;
+    }
 
     @GetMapping("/restaurants")
-    public ResponseEntity<List<Restaurant>> getAllRestaurants() {
+    public ResponseEntity<List<RestaurantDTO>> getAllRestaurants() {
         try {
-            logger.info("Attempting to fetch restaurants from 'GoodEats' collection");
             List<Restaurant> restaurants = restaurantRepository.findAll();
-            logger.info("Query complete. Found {} restaurants", restaurants.size());
-            if (!restaurants.isEmpty()) {
-                Restaurant first = restaurants.get(0);
-                logger.info("First restaurant: id={}, name={}, type={}, borough={}",
-                        first.getId() != null ? first.getId() : "null",
-                        first.getName() != null ? first.getName() : "null",
-                        first.getType() != null ? first.getType() : "null",
-                        first.getBorough() != null ? first.getBorough() : "null");
-            }
-            return new ResponseEntity<>(restaurants, HttpStatus.OK);
+            List<RestaurantDTO> dtos = restaurants.stream()
+                    .map(RestaurantMapper::toDTO)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             logger.error("Error retrieving restaurants: {}", e.getMessage(), e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
     @GetMapping("/restaurants/{id}")
-    public ResponseEntity<Restaurant> getRestaurantById(@PathVariable Integer id) {
-        return restaurantRepository.findById(id)
-                .map(restaurant -> new ResponseEntity<>(restaurant, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public ResponseEntity<RestaurantDTO> getRestaurantById(@PathVariable Integer id) {
+        Optional<Restaurant> restaurant = restaurantRepository.findById(id);
+        return restaurant
+                .map(value -> ResponseEntity.ok(RestaurantMapper.toDTO(value)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/restaurants")
-    public ResponseEntity<Restaurant> createRestaurant(@RequestBody Restaurant restaurant) {
+    public ResponseEntity<RestaurantDTO> createRestaurant(@RequestBody RestaurantDTO dto) {
         try {
-            // Generate a new ID (highest existing ID + 1)
-            Integer nextId = 1;
-            List<Restaurant> allRestaurants = restaurantRepository.findAll();
-            if (!allRestaurants.isEmpty()) {
-                nextId = allRestaurants.stream()
-                        .map(r -> (Integer) r.getId())
-                        .max(Integer::compare)
-                        .orElse(0) + 1;
-            }
-            restaurant.setId(nextId);
+            Integer nextId = restaurantRepository.findAll().stream()
+                    .map(Restaurant::getId)
+                    .max(Integer::compareTo)
+                    .orElse(0) + 1;
 
-            // Save the new restaurant
-            Restaurant savedRestaurant = restaurantRepository.save(restaurant);
-            return new ResponseEntity<>(savedRestaurant, HttpStatus.CREATED);
+            Restaurant newRestaurant = RestaurantMapper.toEntity(dto);
+            newRestaurant.setId(nextId);
+
+            Restaurant saved = restaurantRepository.save(newRestaurant);
+            return ResponseEntity.status(201).body(RestaurantMapper.toDTO(saved));
         } catch (Exception e) {
             logger.error("Error creating restaurant: {}", e.getMessage(), e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
     @DeleteMapping("/restaurants/{id}")
     public ResponseEntity<Void> deleteRestaurant(@PathVariable Integer id) {
-        try {
-            if (!restaurantRepository.existsById(id)) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            restaurantRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            logger.error("Error deleting restaurant: {}", e.getMessage(), e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (!restaurantRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
         }
+        restaurantRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

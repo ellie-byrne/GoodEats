@@ -72,7 +72,8 @@ public class UserIntegrationTest {
         user.setEmail("new@example.com");
 
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
-        when(userService.signUp(any(User.class))).thenReturn("User signed up successfully!");
+        User mockUser = new User(1, "mockuser", "pass123", "mock@example.com");
+        when(userService.signUp(any(User.class))).thenReturn(mockUser);
 
         // Act & Assert - Success case
         mockMvc.perform(post("/api/users/signup")

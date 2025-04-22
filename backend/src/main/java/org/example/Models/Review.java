@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
-@Document(collection = "Reviews") // Updated to match the new collection name
+@Document(collection = "Reviews")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

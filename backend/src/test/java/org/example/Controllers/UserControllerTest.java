@@ -1,9 +1,11 @@
-// src/test/java/org/example/UserControllerTest.java
 package org.example.Controllers;
 
 import org.example.Models.User;
 import org.example.Respositories.UserRepository;
 import org.example.Services.UserService;
+import org.example.DTOs.UserDTO;
+import org.example.DTOs.CreateUserRequest;
+import org.example.DTOs.LoginRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -47,109 +48,92 @@ public class UserControllerTest {
 
     @Test
     void getUserById_Success() {
-        // Arrange
         when(userRepository.findById(1)).thenReturn(Optional.of(testUser));
 
-        // Act
-        ResponseEntity<User> response = userController.getUserById(1);
+        ResponseEntity<UserDTO> response = userController.getUserById(1);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(testUser, response.getBody());
+        assertEquals(testUser.getUsername(), response.getBody().getUsername());
+        assertEquals(testUser.getEmail(), response.getBody().getEmail());
     }
 
     @Test
     void getUserById_NotFound() {
-        // Arrange
         when(userRepository.findById(999)).thenReturn(Optional.empty());
 
-        // Act
-        ResponseEntity<User> response = userController.getUserById(999);
+        ResponseEntity<UserDTO> response = userController.getUserById(999);
 
-        // Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
     }
 
     @Test
     void signUp_Success() {
-        // Arrange
-        when(userService.signUp(any(User.class))).thenReturn("User signed up successfully!");
+        when(userService.signUp(any(User.class))).thenReturn(testUser);
 
-        // Act
-        ResponseEntity<Map<String, String>> response = userController.signUp(testUser);
+        CreateUserRequest request = new CreateUserRequest();
+        request.setUsername("testuser");
+        request.setPassword("password123");
+        request.setEmail("test@example.com");
 
-        // Assert
+        ResponseEntity<UserDTO> response = userController.signUp(request);
+
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals("User signed up successfully!", response.getBody().get("message"));
+        assertEquals("testuser", response.getBody().getUsername());
+        assertEquals("test@example.com", response.getBody().getEmail());
     }
 
     @Test
     void signUp_MissingFields() {
-        // Arrange
-        User incompleteUser = new User();
-        // Missing all fields
+        CreateUserRequest request = new CreateUserRequest(); // all fields null
+        ResponseEntity<UserDTO> response = userController.signUp(request);
 
-        // Act
-        ResponseEntity<Map<String, String>> response = userController.signUp(incompleteUser);
-
-        // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("All fields are required.", response.getBody().get("message"));
-    }
-
-    @Test
-    void signUp_UsernameExists() {
-        // Arrange
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
-
-        // Act
-        ResponseEntity<Map<String, String>> response = userController.signUp(testUser);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Username already exists.", response.getBody().get("message"));
+        assertNull(response.getBody());
     }
 
     @Test
     void login_Success() {
-        // Arrange
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = userController.login(testUser);
+        LoginRequest login = new LoginRequest();
+        login.setUsername("testuser");
+        login.setPassword("password123");
 
-        // Assert
+        ResponseEntity<Map<String, Object>> response = userController.login(login);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Login successful", response.getBody().get("message"));
     }
 
     @Test
     void login_UserNotFound() {
-        // Arrange
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = userController.login(testUser);
+        LoginRequest login = new LoginRequest();
+        login.setUsername("notfound");
+        login.setPassword("irrelevant");
 
-        // Assert
+        ResponseEntity<Map<String, Object>> response = userController.login(login);
+
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("Username not found", response.getBody().get("message"));
     }
 
     @Test
     void login_IncorrectPassword() {
-        // Arrange
         User storedUser = new User();
         storedUser.setUsername("testuser");
-        storedUser.setPassword("differentpassword");
+        storedUser.setPassword("wrongpassword");
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(storedUser));
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = userController.login(testUser);
+        LoginRequest login = new LoginRequest();
+        login.setUsername("testuser");
+        login.setPassword("password123");
 
-        // Assert
+        ResponseEntity<Map<String, Object>> response = userController.login(login);
+
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("Incorrect password", response.getBody().get("message"));
     }

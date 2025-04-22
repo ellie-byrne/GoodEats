@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-@Document(collection = "GoodEats") // Ensure this matches the collection name in MongoDB
+@Document(collection = "GoodEats")
 public class Restaurant {
     @Id
     private Integer id;
@@ -16,7 +16,6 @@ public class Restaurant {
     @JsonProperty("Borough")
     private String Borough;
     private String storePhoto;
-    private List<Review> reviews; // This can be updated to link to the new Reviews collection
 
     // Default constructor
     public Restaurant() {}
@@ -29,11 +28,10 @@ public class Restaurant {
         this.type = type;
         this.Borough = Borough;
         this.storePhoto = storePhoto;
-        this.reviews = reviews;
     }
 
     // Getters and Setters
-    public Object getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -71,14 +69,6 @@ public class Restaurant {
 
     public void setStorePhoto(String storePhoto) {
         this.storePhoto = storePhoto;
-    }
-
-    public List<Review> getReviews() {
-        return reviews;
-    }
-
-    public void setReviews(List<Review> reviews) {
-        this.reviews = reviews;
     }
 
     public String getIdAsString() {

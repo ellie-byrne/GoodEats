@@ -7,11 +7,13 @@ import org.example.Respositories.RestaurantRepository;
 import org.example.Respositories.ReviewRepository;
 import org.example.Respositories.UserRepository;
 import org.example.Services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.DTOs.UserDTO;
+import org.example.DTOs.CreateUserRequest;
+import org.example.DTOs.LoginRequest;
+import org.example.Mappers.UserMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,23 +26,26 @@ import java.util.Optional;
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final ReviewRepository reviewRepository;
+    private final RestaurantRepository restaurantRepository;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private RestaurantRepository restaurantRepository;
+    public UserController(UserRepository userRepository,
+                          UserService userService,
+                          ReviewRepository reviewRepository,
+                          RestaurantRepository restaurantRepository) {
+        this.userRepository = userRepository;
+        this.userService = userService;
+        this.reviewRepository = reviewRepository;
+        this.restaurantRepository = restaurantRepository;
+    }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
         Optional<User> user = userRepository.findById(id);
         if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
+            return ResponseEntity.ok(UserMapper.toDTO(user.get()));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -56,57 +61,36 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Map<String, String>> signUp(@RequestBody User user) {
-        Map<String, String> response = new HashMap<>();
+    public ResponseEntity<UserDTO> signUp(@RequestBody CreateUserRequest request) {
         try {
-            // Validate user data
-            if (user.getUsername() == null || user.getPassword() == null || user.getEmail() == null) {
-                response.put("message", "All fields are required.");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            // Check if the username already exists
-            if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-                response.put("message", "Username already exists.");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            // Check if the email already exists
-            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-                response.put("message", "Email already exists.");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            // Save the user
-            userService.signUp(user);
-            userService.signUp(user);
-            response.put("message", "User signed up successfully!");
-            response.put("userId", String.valueOf(user.getId()));
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            User user = new User(null, request.getUsername(), request.getPassword(), request.getEmail());
+            User savedUser = userService.signUp(user);
+            UserDTO dto = UserMapper.toDTO(savedUser);
+            return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            e.printStackTrace();
-            response.put("message", "An error occurred during signup.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody User user) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
         Map<String, Object> response = new HashMap<>();
-        Optional<User> existingUser  = userRepository.findByUsername(user.getUsername());
+        Optional<User> existingUser = userRepository.findByUsername(request.getUsername());
 
-        if (!existingUser .isPresent()) {
+        if (!existingUser.isPresent()) {
             response.put("message", "Username not found");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        if (!existingUser .get().getPassword().equals(user.getPassword())) {
+        if (!existingUser.get().getPassword().equals(request.getPassword())) {
             response.put("message", "Incorrect password");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         response.put("message", "Login successful");
-        response.put("userId", existingUser .get().getId()); // Include user ID in response
+        response.put("userId", existingUser.get().getId());
         return ResponseEntity.ok(response);
     }
 }
