@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadRestaurants();
 
-    // Setup event listeners
     document.querySelectorAll(".add-restaurant-btn").forEach(btn => {
         btn.addEventListener("click", function() {
             const slot = this.dataset.slot;
