@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodEats - Compare Restaurants</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <h1>GoodEats</h1>
+    <p>Compare Your Favorite Restaurants</p>
+    <div class="theme-toggle">
+        <label class="switch">
+            <input type="checkbox" id="dark-mode-toggle">
+            <span class="slider round"></span>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+    <nav class="tabs">
+        <ul>
+            <li><a href="index.html">Restaurants</a></li>
+            <li><a href="favourites.html">Favourites</a></li>
+            <li><a href="manage-restaurants.html">Manage</a></li>
+            <li class="active"><a href="comparison.html">Compare</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div id="auth-status">
+    <button id="login-button" onclick="toggleAuthModal()" style="position: fixed; top: 20px; left: 20px; z-index: 1000;">Login</button>
+    <div id="username-display" style="position: fixed; top: 20px; left: 20px; z-index: 1000; display: none;"></div>
+</div>
+
+<main>
+    <div class="container">
+        <h2>Restaurant Comparison</h2>
+        <p>Coming soon! You'll be able to compare restaurants here.</p>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 GoodEats</p>
+</footer>
+
+<!-- Login/Signup -->
+<div id="auth-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="toggleAuthModal()">&times;</span>
+        <h2 id="modal-title">Login</h2>
+        <form id="auth-form">
+            <input type="text" id="username" name="username" placeholder="Username" required />
+            <input type="password" id="password" name="password" placeholder="Password" required />
+            <input type="email" id="email" name="email" placeholder="Email" style="display: none;" />
+            <button type="submit">Submit</button>
+        </form>
+        <p id="auth-toggle-text">
+            Don't have an account? <a href="#" onclick="switchAuthMode()">Sign up</a>
+        </p>
+    </div>
+</div>
+
+<script src="comparison.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>
