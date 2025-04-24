@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GoodEats - Compare Restaurants</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="comparison-style.css">
 </head>
 <body>
 <header>
@@ -35,7 +36,38 @@
 <main>
     <div class="container">
         <h2>Restaurant Comparison</h2>
-        <p>Coming soon! You'll be able to compare restaurants here.</p>
+
+        <div class="comparison-boxes">
+            <div class="comparison-box">
+                <h3>Restaurant 1</h3>
+                <div class="selected-restaurant" id="restaurant1-selection">
+                    <button class="add-restaurant-btn" data-slot="1">+ Add Restaurant</button>
+                </div>
+            </div>
+
+            <div class="comparison-box">
+                <h3>Restaurant 2</h3>
+                <div class="selected-restaurant" id="restaurant2-selection">
+                    <button class="add-restaurant-btn" data-slot="2">+ Add Restaurant</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-actions">
+            <button id="compare-button" class="button" disabled>Compare Restaurants</button>
+            <button id="clear-comparison" class="button secondary">Clear</button>
+        </div>
+
+        <div id="comparison-results" class="comparison-results hidden">
+            <!-- Comparison results will be displayed here -->
+        </div>
+
+        <div class="restaurant-list">
+            <h3>All Restaurants</h3>
+            <div id="restaurants-container">
+                <div class="loading">Loading restaurants...</div>
+            </div>
+        </div>
     </div>
 </main>
 
@@ -43,7 +75,7 @@
     <p>&copy; 2025 GoodEats</p>
 </footer>
 
-<!-- Login/Signup -->
+<!-- Login/Signup Modal -->
 <div id="auth-modal" class="modal">
     <div class="modal-content">
         <span class="close-button" onclick="toggleAuthModal()">&times;</span>
