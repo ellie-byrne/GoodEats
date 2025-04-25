@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.stereotype.Service;
 
@@ -45,10 +46,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final MongoTemplate mongoTemplate;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, MongoTemplate mongoTemplate) {
+    public UserService(UserRepository userRepository, MongoTemplate mongoTemplate, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.mongoTemplate = mongoTemplate;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User signUp(User user) {
@@ -65,7 +68,8 @@ public class UserService {
         }
 
         int nextId = getNextSequence("userId");
-        User newUser = UserFactory.create(nextId, user.getUsername(), user.getPassword(), user.getEmail());
+        String hashedPassword = passwordEncoder.encode(user.getPassword());
+        User newUser = UserFactory.create(nextId, user.getUsername(), hashedPassword, user.getEmail());
         return userRepository.save(newUser);
     }
 
@@ -77,7 +81,6 @@ public class UserService {
     }
 
     public String login(String username, String password) {
-        // Find user by username
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isEmpty()) {
             return "Username does not exist.";
@@ -85,11 +88,11 @@ public class UserService {
 
         User user = userOptional.get();
 
-        // Check if password matches
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             return "Incorrect password.";
         }
 
-        return "Login successful!";
+        return "Login successful";
     }
+
 }
