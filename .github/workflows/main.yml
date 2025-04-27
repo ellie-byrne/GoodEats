@@ -31,7 +31,7 @@ jobs:
           find backend/src/main/resources/static -name "*.css" -exec stylelint {} \;
 
       - name: Package with Maven
-        run: mvn -B package --file backend/pom.xml -DskipTests
+        run: mvn -B package --file backend/pom.xml -Dmaven.test.skip=true
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
