@@ -62,6 +62,16 @@
             <!-- Comparison results will be displayed here -->
         </div>
 
+        <div class="location-filter">
+            <label for="user-postcode"></label><input type="text" id="user-postcode" placeholder="Enter your postcode">
+            <label for="travel-mode"></label><select id="travel-mode">
+                <option value="driving-car">Driving</option>
+                <option value="foot-walking">Walking</option>
+                <option value="cycling-regular">Cycling</option>
+            </select>
+            <button id="calculate-distance" class="button">Calculate Travel Times</button>
+        </div>
+
         <div class="restaurant-list">
             <h3>All Restaurants</h3>
             <div id="restaurants-container">
