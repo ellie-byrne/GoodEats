@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Store all restaurants for filtering
             allRestaurants = restaurants
 
-            // Initialize all features
+            // Initialise all features
             populateFilters(restaurants)
             displayRestaurants(restaurants)
             setupDarkMode()
