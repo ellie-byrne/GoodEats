@@ -43,7 +43,7 @@ public class RestaurantControllerTest {
     void getAllRestaurants_Success() {
         List<Restaurant> restaurants = List.of(
                 testRestaurant,
-                new Restaurant(2, "Yummy Palace", "Chinese", "Hackney", null, null)
+                new Restaurant(1, "Test Restaurant", "Italian", "Camden", null, "NW1 1AA", null)
         );
         when(restaurantRepository.findAll()).thenReturn(restaurants);
 
