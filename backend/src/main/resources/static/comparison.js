@@ -301,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 distance: route2Data.distance
             };
 
-            updateComparisonWithTravelData();
+            displayTravelDataOnly();
 
         } catch (error) {
             console.error("Error calculating travel times:", error);
@@ -310,6 +310,85 @@ document.addEventListener("DOMContentLoaded", () => {
             calculateDistanceBtn.textContent = "Calculate Travel Times";
             calculateDistanceBtn.disabled = false;
         }
+    }
+
+    function displayTravelDataOnly() {
+        const restaurant1El = document.querySelector("#restaurant1-selection .selected-restaurant-card");
+        const restaurant2El = document.querySelector("#restaurant2-selection .selected-restaurant-card");
+
+        const restaurant1Name = restaurant1El.querySelector("h4").textContent;
+        const restaurant2Name = restaurant2El.querySelector("h4").textContent;
+
+        let travelModeText;
+        switch(travelData.travelMode) {
+            case 'foot-walking':
+                travelModeText = 'Walking';
+                break;
+            case 'cycling-regular':
+                travelModeText = 'Cycling';
+                break;
+            case 'driving-car':
+                travelModeText = 'Driving';
+                break;
+            default:
+                travelModeText = travelData.travelMode;
+        }
+
+        let closerRestaurant = null;
+        let timeDifference = 0;
+
+        if (travelData.restaurant1.time < travelData.restaurant2.time) {
+            closerRestaurant = restaurant1Name;
+            timeDifference = travelData.restaurant2.time - travelData.restaurant1.time;
+        } else if (travelData.restaurant2.time < travelData.restaurant1.time) {
+            closerRestaurant = restaurant2Name;
+            timeDifference = travelData.restaurant1.time - travelData.restaurant2.time;
+        }
+
+        let resultsHTML = `
+            <h3>Travel Information</h3>
+            <p class="travel-from">From postcode: <strong>${travelData.userPostcode}</strong> by <strong>${travelModeText}</strong></p>
+            <div class="comparison-stats">
+                <div class="stat-row">
+                    <div class="stat-label">Restaurant:</div>
+                    <div class="stat-value">${restaurant1Name}</div>
+                    <div class="stat-value">${restaurant2Name}</div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">Travel Time:</div>
+                    <div class="stat-value">
+                        ${travelData.restaurant1.time} min
+                    </div>
+                    <div class="stat-value">
+                        ${travelData.restaurant2.time} min
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">Distance:</div>
+                    <div class="stat-value">
+                        ${travelData.restaurant1.distance} km
+                    </div>
+                    <div class="stat-value">
+                        ${travelData.restaurant2.distance} km
+                    </div>
+                </div>
+            </div>
+            ${closerRestaurant ? `
+                <div class="comparison-winner travel-winner">
+                    <h4>🚀 ${closerRestaurant} is closer!</h4>
+                    <p>It would save you ${timeDifference} minutes of travel time.</p>
+                </div>
+            ` : `
+                <div class="comparison-winner travel-winner">
+                    <h4>🚀 Same travel time!</h4>
+                    <p>Both restaurants are equally accessible from your location.</p>
+                </div>
+            `}
+        `;
+
+        comparisonResults.innerHTML = resultsHTML;
+        comparisonResults.classList.remove("hidden");
+        comparisonResults.scrollIntoView({ behavior: "smooth" });
     }
 
     function findRestaurantById(id) {
@@ -372,7 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorisation': ORS_API_KEY
+                    'Authorization': ORS_API_KEY
                 },
                 body: JSON.stringify(body)
             });
@@ -436,7 +515,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let travelSection = comparisonResults.querySelector(".travel-comparison");
         if (!travelSection) {
-
             travelSection = document.createElement("div");
             travelSection.className = "travel-comparison";
 
@@ -514,7 +592,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         comparisonResults.classList.remove("hidden");
-
         travelSection.scrollIntoView({ behavior: "smooth" });
     }
 
