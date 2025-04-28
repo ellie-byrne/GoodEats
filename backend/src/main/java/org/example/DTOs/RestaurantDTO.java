@@ -6,15 +6,17 @@ public class RestaurantDTO {
     private String type;
     private String borough;
     private String storePhoto;
+    private String postcode;
 
     public RestaurantDTO() {}
 
-    public RestaurantDTO(Integer id, String name, String type, String borough, String storePhoto) {
+    public RestaurantDTO(Integer id, String name, String type, String borough, String storePhoto, String postcode) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.borough = borough;
         this.storePhoto = storePhoto;
+        this.postcode = postcode;
     }
 
     public Integer getId() { return id; }
@@ -31,4 +33,7 @@ public class RestaurantDTO {
 
     public String getStorePhoto() { return storePhoto; }
     public void setStorePhoto(String storePhoto) { this.storePhoto = storePhoto; }
+
+    public String getPostcode() {return postcode;}
+    public void setPostcode(String postcode) {this.postcode = postcode;}
 }

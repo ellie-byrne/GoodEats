@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodEats - Compare Restaurants</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="comparison-style.css">
+</head>
+<body>
+<header>
+    <h1>GoodEats</h1>
+    <p>Compare Your Favourite Restaurants</p>
+    <div class="theme-toggle">
+        <label class="switch">
+            <input type="checkbox" id="dark-mode-toggle">
+            <span class="slider round"></span>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+    <nav class="tabs">
+        <ul>
+            <li><a href="index.html">Restaurants</a></li>
+            <li><a href="favourites.html">Favourites</a></li>
+            <li><a href="manage-restaurants.html">Manage</a></li>
+            <li class="active"><a href="comparison.html">Compare</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div id="auth-status">
+    <button id="login-button" onclick="toggleAuthModal()" style="position: fixed; top: 20px; left: 20px; z-index: 1000;">Login</button>
+    <div id="username-display" style="position: fixed; top: 20px; left: 20px; z-index: 1000; display: none;"></div>
+</div>
+
+<main>
+    <div class="container">
+        <h2>Restaurant Comparison</h2>
+
+        <div class="comparison-boxes">
+            <div class="comparison-box">
+                <h3>Restaurant 1</h3>
+                <div class="selected-restaurant" id="restaurant1-selection">
+                    <button class="add-restaurant-btn" data-slot="1">+ Add Restaurant</button>
+                </div>
+            </div>
+
+            <div class="comparison-box">
+                <h3>Restaurant 2</h3>
+                <div class="selected-restaurant" id="restaurant2-selection">
+                    <button class="add-restaurant-btn" data-slot="2">+ Add Restaurant</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-actions">
+            <button id="compare-button" class="button" disabled>Compare Restaurants</button>
+            <button id="clear-comparison" class="button secondary">Clear</button>
+        </div>
+
+        <div id="comparison-results" class="comparison-results hidden">
+            <!-- Comparison results will be displayed here -->
+        </div>
+
+        <div class="location-filter">
+            <input type="text" id="user-postcode" placeholder="Enter your postcode">
+            <select id="travel-mode">
+                <option value="driving-car">Driving</option>
+                <option value="foot-walking">Walking</option>
+                <option value="cycling-regular">Cycling</option>
+            </select>
+            <button id="calculate-distance" class="button">Calculate Travel Times</button>
+        </div>
+
+        <div class="restaurant-list">
+            <h3>All Restaurants</h3>
+            <div id="restaurants-container">
+                <div class="loading">Loading restaurants...</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 GoodEats</p>
+</footer>
+
+<!-- Login/Signup Modal -->
+<div id="auth-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="toggleAuthModal()">&times;</span>
+        <h2 id="modal-title">Login</h2>
+        <form id="auth-form">
+            <input type="text" id="username" name="username" placeholder="Username" required />
+            <input type="password" id="password" name="password" placeholder="Password" required />
+            <input type="email" id="email" name="email" placeholder="Email" style="display: none;" />
+            <button type="submit">Submit</button>
+        </form>
+        <p id="auth-toggle-text">
+            Don't have an account? <a href="#" onclick="switchAuthMode()">Sign up</a>
+        </p>
+    </div>
+</div>
+
+<script src="comparison.js"></script>
+<script src="auth.js"></script>
+</body>
+</html>

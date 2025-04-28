@@ -10,24 +10,25 @@ import java.util.List;
 public class Restaurant {
     @Id
     private Integer id;
-
     private String name;
     private String type;
     @JsonProperty("Borough")
     private String Borough;
     private String storePhoto;
+    private String postcode;
 
     // Default constructor
     public Restaurant() {}
 
-    // Parameterized constructor
+    // Parameterised constructor
     public Restaurant(Integer id, String name, String type, String Borough,
-                      String storePhoto, List<Review> reviews) {
+                      String storePhoto, String postcode,List<Review> reviews) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.Borough = Borough;
         this.storePhoto = storePhoto;
+        this.postcode = postcode;
     }
 
     // Getters and Setters
@@ -70,6 +71,10 @@ public class Restaurant {
     public void setStorePhoto(String storePhoto) {
         this.storePhoto = storePhoto;
     }
+
+    public String getPostcode() {return postcode;}
+
+    public void setPostcode(String postcode) {this.postcode = postcode;}
 
     public String getIdAsString() {
         if (id != null) {

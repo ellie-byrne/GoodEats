@@ -10,7 +10,8 @@ public class RestaurantMapper {
                 restaurant.getName(),
                 restaurant.getType(),
                 restaurant.getBorough(),
-                restaurant.getStorePhoto()
+                restaurant.getStorePhoto(),
+                restaurant.getPostcode()
         );
     }
 
@@ -21,6 +22,7 @@ public class RestaurantMapper {
                 dto.getType(),
                 dto.getBorough(),
                 dto.getStorePhoto(),
+                dto.getPostcode(),
                 null // Reviews are not part of the DTO
         );
     }
