@@ -1,7 +1,5 @@
 package org.example.Controllers;
 
-import org.example.Models.Restaurant;
-import org.example.Models.Review;
 import org.example.Models.User;
 import org.example.Respositories.RestaurantRepository;
 import org.example.Respositories.ReviewRepository;
@@ -44,24 +42,17 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
         Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            return ResponseEntity.ok(UserMapper.toDTO(user.get()));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/{userId}/favourites")
-    public List<Restaurant> getUserFavourites(@PathVariable int userId) {
-        List<Review> favReviews = reviewRepository.findByUserIDAndFavourite(userId, true);
-        List<Integer> restaurantIds = favReviews.stream()
-                .map(Review::getRestaurantID)
-                .collect(Collectors.toList());
-        return restaurantRepository.findAllById(restaurantIds);
+        return user.map(value -> ResponseEntity.ok(UserMapper.toDTO(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/signup")
     public ResponseEntity<UserDTO> signUp(@RequestBody CreateUserRequest request) {
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty() ||
+                request.getPassword() == null || request.getPassword().trim().isEmpty() ||
+                request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         try {
             User user = new User(null, request.getUsername(), request.getPassword(), request.getEmail());
             User savedUser = userService.signUp(user);
@@ -77,9 +68,16 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
         Map<String, Object> response = new HashMap<>();
+
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty() ||
+                request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            response.put("message", "Username and password are required");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
         Optional<User> existingUser = userRepository.findByUsername(request.getUsername());
 
-        if (!existingUser.isPresent()) {
+        if (existingUser.isEmpty()) {
             response.put("message", "Username not found");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
