@@ -1,0 +1,20 @@
+# File: src/main/resources/application.yml
+server:
+  port: 8083
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: review-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/goodeats
+      auto-index-creation: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

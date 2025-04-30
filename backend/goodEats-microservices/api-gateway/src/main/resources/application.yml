@@ -1,0 +1,49 @@
+# File: api-gateway/src/main/resources/application.yml
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # User Service Routes
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/users/**
+
+        # Restaurant Service Routes
+        - id: restaurant-service
+          uri: lb://RESTAURANT-SERVICE
+          predicates:
+            - Path=/api/restaurants/**
+
+        # Review Service Routes
+        - id: review-service
+          uri: lb://REVIEW-SERVICE
+          predicates:
+            - Path=/api/reviews/**
+
+        # Static Content Route - This is crucial for your frontend files
+        - id: static-content-service
+          uri: lb://USER-SERVICE  # Or whichever service hosts your static files
+          predicates:
+            - Path=/**  # Catch-all for static content
+          filters:
+            - StripPrefix=0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+    logging:
+      level:
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.http.server.reactive: DEBUG
+        org.springframework.web.reactive: DEBUG
+        reactor.netty: DEBUG
