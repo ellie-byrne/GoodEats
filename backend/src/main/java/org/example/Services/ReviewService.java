@@ -14,8 +14,8 @@ import java.util.Date;
 @Service
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
-    private final MongoTemplate mongoTemplate;
+    public final ReviewRepository reviewRepository;
+    public final MongoTemplate mongoTemplate;
 
     public ReviewService(ReviewRepository reviewRepository, MongoTemplate mongoTemplate) {
         this.reviewRepository = reviewRepository;
@@ -28,7 +28,7 @@ public class ReviewService {
         return reviewRepository.save(newReview);
     }
 
-    private int getNextSequence(String seqName) {
+    int getNextSequence(String seqName) {
         Query query = new Query(Criteria.where("_id").is(seqName));
         Update update = new Update().inc("seq", 1);
         Counter counter = mongoTemplate.findAndModify(query, update, org.springframework.data.mongodb.core.FindAndModifyOptions.options().returnNew(true).upsert(true), Counter.class);

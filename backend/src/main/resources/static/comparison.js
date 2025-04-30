@@ -5,18 +5,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearButton = document.getElementById("clear-comparison");
     const comparisonResults = document.getElementById("comparison-results");
 
-    // Travel time elements
     const postcodeInput = document.getElementById("user-postcode");
     const travelModeSelect = document.getElementById("travel-mode");
     const calculateDistanceBtn = document.getElementById("calculate-distance");
 
-    // OpenRouteService API key - you'll need to replace this with your actual API key
     const ORS_API_KEY = "5b3ce3597851110001cf62480278cea0a7e148b2bb33628a85ea9421";
 
-    // Store all restaurants in memory
     let allRestaurants = [];
 
-    // Travel data storage
     let travelData = {
         userPostcode: null,
         travelMode: null,
@@ -54,7 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return response.json();
             })
             .then(restaurants => {
-                // Store restaurants in memory for later use
                 allRestaurants = restaurants;
                 displayRestaurants(restaurants);
             })
@@ -166,7 +161,6 @@ document.addEventListener("DOMContentLoaded", () => {
             behavior: 'smooth'
         });
 
-        // Reset travel data for this restaurant
         travelData[`restaurant${slot}`] = { time: null, distance: null };
     }
 
@@ -187,7 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
         compareButton.disabled = true;
         comparisonResults.classList.add("hidden");
 
-        // Reset travel data for this restaurant
         travelData[`restaurant${slot}`] = { time: null, distance: null };
     }
 
@@ -196,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
         removeRestaurant(2);
         comparisonResults.classList.add("hidden");
 
-        // Reset all travel data
         travelData = {
             userPostcode: null,
             travelMode: null,
@@ -233,15 +225,12 @@ document.addEventListener("DOMContentLoaded", () => {
             fetch(`http://localhost:8080/api/restaurants/${id2}/reviews`).then(res => res.json())
         ])
             .then(([reviews1, reviews2]) => {
-                // Calculate average ratings
                 const avgRating1 = calculateAverageRating(reviews1);
                 const avgRating2 = calculateAverageRating(reviews2);
 
-                // Get restaurant names
                 const name1 = restaurant1El.querySelector("h4").textContent;
                 const name2 = restaurant2El.querySelector("h4").textContent;
 
-                // Compare and display results
                 displayComparisonResults(name1, name2, reviews1, reviews2, avgRating1, avgRating2);
             })
             .catch(error => {
@@ -274,20 +263,16 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Store user input
         travelData.userPostcode = postcode;
         travelData.travelMode = travelMode;
 
-        // Show loading state
         calculateDistanceBtn.textContent = "Calculating...";
         calculateDistanceBtn.disabled = true;
 
         try {
-            // Get restaurants from the stored array using their IDs
             const id1 = restaurant1El.dataset.id;
             const id2 = restaurant2El.dataset.id;
 
-            // Find restaurants in our stored array (instead of making API calls)
             const restaurant1 = findRestaurantById(id1);
             const restaurant2 = findRestaurantById(id2);
 
@@ -295,20 +280,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error("Could not find restaurant details");
             }
 
-            // Convert postcodes to coordinates using an external API
             const [userCoords, restaurant1Coords, restaurant2Coords] = await Promise.all([
                 getCoordinatesFromPostcode(postcode),
                 getCoordinatesFromPostcode(restaurant1.postcode),
                 getCoordinatesFromPostcode(restaurant2.postcode)
             ]);
 
-            // Get travel data from OpenRouteService API
             const [route1Data, route2Data] = await Promise.all([
                 getRouteData(userCoords, restaurant1Coords, travelMode),
                 getRouteData(userCoords, restaurant2Coords, travelMode)
             ]);
 
-            // Store the travel data
             travelData.restaurant1 = {
                 time: route1Data.time,
                 distance: route1Data.distance
@@ -319,175 +301,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 distance: route2Data.distance
             };
 
-            // Update the comparison results with travel data
-            updateComparisonWithTravelData();
+            displayTravelDataOnly();
 
         } catch (error) {
             console.error("Error calculating travel times:", error);
             alert("An error occurred while calculating travel times. Please check your postcode and try again.");
         } finally {
-            // Reset button state
             calculateDistanceBtn.textContent = "Calculate Travel Times";
             calculateDistanceBtn.disabled = false;
         }
     }
 
-    // Helper function to find a restaurant by ID in our stored array
-    function findRestaurantById(id) {
-        return allRestaurants.find(restaurant => {
-            const restaurantId = restaurant.id || restaurant._id;
-            return restaurantId == id; // Using == instead of === for string/number comparison
-        });
-    }
+    function displayTravelDataOnly() {
+        const restaurant1El = document.querySelector("#restaurant1-selection .selected-restaurant-card");
+        const restaurant2El = document.querySelector("#restaurant2-selection .selected-restaurant-card");
 
-    async function getCoordinatesFromPostcode(postcode) {
-        try {
-            // Use postcodes.io API to convert UK postcodes to coordinates
-            const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
-            const data = await response.json();
+        const restaurant1Name = restaurant1El.querySelector("h4").textContent;
+        const restaurant2Name = restaurant2El.querySelector("h4").textContent;
 
-            if (data.status === 200 && data.result) {
-                return {
-                    longitude: data.result.longitude,
-                    latitude: data.result.latitude
-                };
-            } else {
-                throw new Error(`Could not find coordinates for postcode: ${postcode}`);
-            }
-        } catch (error) {
-            console.error("Error getting coordinates:", error);
-            // Fall back to dummy coordinates for demonstration purposes
-            return simulateCoordinatesFromPostcode(postcode);
-        }
-    }
-
-    function simulateCoordinatesFromPostcode(postcode) {
-        // This is a fallback when the postcode API is unavailable
-        // In a real app, you should handle this more gracefully
-        console.warn("Using simulated coordinates for postcode:", postcode);
-
-        // Central London coordinates as base
-        const baseLat = 51.5074;
-        const baseLng = -0.1278;
-
-        // Generate a small random offset based on postcode to simulate different locations
-        const postcodeSeed = postcode.replace(/\s+/g, '').split('').reduce((acc, char) => {
-            return acc + char.charCodeAt(0);
-        }, 0);
-
-        const latOffset = (postcodeSeed % 100) / 500; // Small variation
-        const lngOffset = (postcodeSeed % 100) / 700; // Small variation
-
-        return {
-            latitude: baseLat + latOffset,
-            longitude: baseLng + lngOffset
-        };
-    }
-
-    async function getRouteData(start, end, travelMode) {
-        try {
-            // Call OpenRouteService API to get route information
-            const body = {
-                coordinates: [
-                    [start.longitude, start.latitude],
-                    [end.longitude, end.latitude]
-                ],
-                radiuses: [-1, -1]
-            };
-
-            const response = await fetch(`https://api.openrouteservice.org/v2/directions/${travelMode}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorisation': ORS_API_KEY
-                },
-                body: JSON.stringify(body)
-            });
-
-            const data = await response.json();
-
-            if (data.features && data.features.length > 0) {
-                const route = data.features[0].properties.segments[0];
-
-                // Return time in minutes and distance in kilometers
-                return {
-                    time: Math.round(route.duration / 60),  // Convert seconds to minutes
-                    distance: (route.distance / 1000).toFixed(1)  // Convert meters to kilometers
-                };
-            } else {
-                throw new Error("No route found");
-            }
-        } catch (error) {
-            console.error("Error getting route data:", error);
-            // Fall back to simulated route data
-            return simulateRouteData(start, end, travelMode);
-        }
-    }
-
-    function simulateRouteData(start, end, travelMode) {
-        // Calculate Haversine distance between two points
-        const R = 6371; // Earth's radius in km
-        const dLat = (end.latitude - start.latitude) * Math.PI / 180;
-        const dLon = (end.longitude - start.longitude) * Math.PI / 180;
-        const a =
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(start.latitude * Math.PI / 180) * Math.cos(end.latitude * Math.PI / 180) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const distance = R * c;
-
-        // Simulate travel time based on distance and mode
-        let speed; // km per hour
-        switch(travelMode) {
-            case 'foot-walking':
-                speed = 5;
-                break;
-            case 'cycling-regular':
-                speed = 15;
-                break;
-            case 'driving-car':
-            default:
-                speed = 30; // City driving with traffic
-                break;
-        }
-
-        // Calculate time in minutes
-        const time = Math.round((distance / speed) * 60);
-
-        return {
-            distance: distance.toFixed(1),
-            time: time
-        };
-    }
-
-    function updateComparisonWithTravelData() {
-        // Only proceed if we already have comparison results displayed
-        if (comparisonResults.classList.contains("hidden")) {
-            compareRestaurants();
-            return;
-        }
-
-        // Find the travel time section or create it if it doesn't exist
-        let travelSection = comparisonResults.querySelector(".travel-comparison");
-        if (!travelSection) {
-            // Create the travel section
-            travelSection = document.createElement("div");
-            travelSection.className = "travel-comparison";
-
-            // Find where to insert it (after the comparison stats)
-            const comparisonStats = comparisonResults.querySelector(".comparison-stats");
-            if (comparisonStats) {
-                comparisonStats.insertAdjacentElement('afterend', travelSection);
-            } else {
-                comparisonResults.appendChild(travelSection);
-            }
-        }
-
-        // Get restaurant names
-        const restaurant1Name = document.querySelector("#restaurant1-selection .selected-restaurant-card h4").textContent;
-        const restaurant2Name = document.querySelector("#restaurant2-selection .selected-restaurant-card h4").textContent;
-
-        // Display travel mode in a readable format
         let travelModeText;
         switch(travelData.travelMode) {
             case 'foot-walking':
@@ -503,7 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 travelModeText = travelData.travelMode;
         }
 
-        // Determine which restaurant is closer in terms of time
         let closerRestaurant = null;
         let timeDifference = 0;
 
@@ -515,7 +345,216 @@ document.addEventListener("DOMContentLoaded", () => {
             timeDifference = travelData.restaurant1.time - travelData.restaurant2.time;
         }
 
-        // Update the travel section content
+        let resultsHTML = `
+            <h3>Travel Information</h3>
+            <p class="travel-from">From postcode: <strong>${travelData.userPostcode}</strong> by <strong>${travelModeText}</strong></p>
+            <div class="comparison-stats">
+                <div class="stat-row">
+                    <div class="stat-label">Restaurant:</div>
+                    <div class="stat-value">${restaurant1Name}</div>
+                    <div class="stat-value">${restaurant2Name}</div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">Travel Time:</div>
+                    <div class="stat-value">
+                        ${travelData.restaurant1.time} min
+                    </div>
+                    <div class="stat-value">
+                        ${travelData.restaurant2.time} min
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">Distance:</div>
+                    <div class="stat-value">
+                        ${travelData.restaurant1.distance} km
+                    </div>
+                    <div class="stat-value">
+                        ${travelData.restaurant2.distance} km
+                    </div>
+                </div>
+            </div>
+            ${closerRestaurant ? `
+                <div class="comparison-winner travel-winner">
+                    <h4>🚀 ${closerRestaurant} is closer!</h4>
+                    <p>It would save you ${timeDifference} minutes of travel time.</p>
+                </div>
+            ` : `
+                <div class="comparison-winner travel-winner">
+                    <h4>🚀 Same travel time!</h4>
+                    <p>Both restaurants are equally accessible from your location.</p>
+                </div>
+            `}
+        `;
+
+        comparisonResults.innerHTML = resultsHTML;
+        comparisonResults.classList.remove("hidden");
+        comparisonResults.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function findRestaurantById(id) {
+        return allRestaurants.find(restaurant => {
+            const restaurantId = restaurant.id || restaurant._id;
+            return restaurantId == id;
+        });
+    }
+
+    async function getCoordinatesFromPostcode(postcode) {
+        try {
+            const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+            const data = await response.json();
+
+            if (data.status === 200 && data.result) {
+                return {
+                    longitude: data.result.longitude,
+                    latitude: data.result.latitude
+                };
+            } else {
+                throw new Error(`Could not find coordinates for postcode: ${postcode}`);
+            }
+        } catch (error) {
+            console.error("Error getting coordinates:", error);
+            return simulateCoordinatesFromPostcode(postcode);
+        }
+    }
+
+    function simulateCoordinatesFromPostcode(postcode) {
+        console.warn("Using simulated coordinates for postcode:", postcode);
+
+        const baseLat = 51.5074;
+        const baseLng = -0.1278;
+
+
+        const postcodeSeed = postcode.replace(/\s+/g, '').split('').reduce((acc, char) => {
+            return acc + char.charCodeAt(0);
+        }, 0);
+
+        const latOffset = (postcodeSeed % 100) / 500; // Small variation
+        const lngOffset = (postcodeSeed % 100) / 700; // Small variation
+
+        return {
+            latitude: baseLat + latOffset,
+            longitude: baseLng + lngOffset
+        };
+    }
+
+    async function getRouteData(start, end, travelMode) {
+        try {
+            const body = {
+                coordinates: [
+                    [start.longitude, start.latitude],
+                    [end.longitude, end.latitude]
+                ],
+                radiuses: [-1, -1]
+            };
+
+            const response = await fetch(`https://api.openrouteservice.org/v2/directions/${travelMode}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': ORS_API_KEY
+                },
+                body: JSON.stringify(body)
+            });
+
+            const data = await response.json();
+
+            if (data.features && data.features.length > 0) {
+                const route = data.features[0].properties.segments[0];
+
+                return {
+                    time: Math.round(route.duration / 60),
+                    distance: (route.distance / 1000).toFixed(1)
+                };
+            } else {
+                throw new Error("No route found");
+            }
+        } catch (error) {
+            console.error("Error getting route data:", error);
+            return simulateRouteData(start, end, travelMode);
+        }
+    }
+
+    function simulateRouteData(start, end, travelMode) {
+        const R = 6371; // Earth's radius in km
+        const dLat = (end.latitude - start.latitude) * Math.PI / 180;
+        const dLon = (end.longitude - start.longitude) * Math.PI / 180;
+        const a =
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(start.latitude * Math.PI / 180) * Math.cos(end.latitude * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c;
+
+        let speed; // km per hour
+        switch(travelMode) {
+            case 'foot-walking':
+                speed = 5;
+                break;
+            case 'cycling-regular':
+                speed = 15;
+                break;
+            case 'driving-car':
+            default:
+                speed = 30;
+                break;
+        }
+
+        const time = Math.round((distance / speed) * 60);
+
+        return {
+            distance: distance.toFixed(1),
+            time: time
+        };
+    }
+
+    function updateComparisonWithTravelData() {
+        if (comparisonResults.classList.contains("hidden")) {
+            compareRestaurants();
+            return;
+        }
+
+        let travelSection = comparisonResults.querySelector(".travel-comparison");
+        if (!travelSection) {
+            travelSection = document.createElement("div");
+            travelSection.className = "travel-comparison";
+
+            const comparisonStats = comparisonResults.querySelector(".comparison-stats");
+            if (comparisonStats) {
+                comparisonStats.insertAdjacentElement('afterend', travelSection);
+            } else {
+                comparisonResults.appendChild(travelSection);
+            }
+        }
+
+        const restaurant1Name = document.querySelector("#restaurant1-selection .selected-restaurant-card h4").textContent;
+        const restaurant2Name = document.querySelector("#restaurant2-selection .selected-restaurant-card h4").textContent;
+
+        let travelModeText;
+        switch(travelData.travelMode) {
+            case 'foot-walking':
+                travelModeText = 'Walking';
+                break;
+            case 'cycling-regular':
+                travelModeText = 'Cycling';
+                break;
+            case 'driving-car':
+                travelModeText = 'Driving';
+                break;
+            default:
+                travelModeText = travelData.travelMode;
+        }
+
+        let closerRestaurant = null;
+        let timeDifference = 0;
+
+        if (travelData.restaurant1.time < travelData.restaurant2.time) {
+            closerRestaurant = restaurant1Name;
+            timeDifference = travelData.restaurant2.time - travelData.restaurant1.time;
+        } else if (travelData.restaurant2.time < travelData.restaurant1.time) {
+            closerRestaurant = restaurant2Name;
+            timeDifference = travelData.restaurant1.time - travelData.restaurant2.time;
+        }
+
         travelSection.innerHTML = `
             <h3>Travel Information</h3>
             <p class="travel-from">From postcode: <strong>${travelData.userPostcode}</strong> by <strong>${travelModeText}</strong></p>
@@ -552,10 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `}
         `;
 
-        // Make sure the comparison results are visible
         comparisonResults.classList.remove("hidden");
-
-        // Scroll to the travel section
         travelSection.scrollIntoView({ behavior: "smooth" });
     }
 
@@ -655,8 +691,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         comparisonResults.innerHTML = resultsHTML;
         comparisonResults.classList.remove("hidden");
-
-        // If we have travel data, update the comparison with it
         if (travelData.userPostcode && travelData.restaurant1.time !== null && travelData.restaurant2.time !== null) {
             updateComparisonWithTravelData();
         }

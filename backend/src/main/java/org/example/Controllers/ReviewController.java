@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class ReviewController {
 
-    private final ReviewService reviewService;
-    private final ReviewRepository reviewRepository;
+    public final ReviewService reviewService;
+    public final ReviewRepository reviewRepository;
 
     public ReviewController(ReviewService reviewService, ReviewRepository reviewRepository) {
         this.reviewService = reviewService;
