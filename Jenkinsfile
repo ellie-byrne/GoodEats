@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'mvn spring-boot:run'
+                sh 'mvn org.springframework.boot:spring-boot-maven-plugin:run'
             }
         }
     }
