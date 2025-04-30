@@ -2,6 +2,7 @@ pipeline {
     agent any
     tools {
         maven 'M3'
+        jdk 'JDK17'
     }
     stages {
         stage('Checkout') {
@@ -9,17 +10,16 @@ pipeline {
                 git 'https://github.com/ellie-byrne/GoodEats.git'
             }
         }
-        stage('Build') {
+        stage('Check Java') {
             steps {
-                sh 'mvn clean install'
+                sh 'java -version'
             }
         }
-//         stage('Test') {
-//             steps {
-//                 // Run Maven tests when we do them
-//                 sh 'mvn test'
-//             }
-//         }
+        stage('Build') {
+            steps {
+                sh 'mvn -Dmaven.compiler.source=17 -Dmaven.compiler.target=17 clean install'
+            }
+        }
         stage('Deploy') {
             steps {
                 sh 'mvn spring-boot:run'
