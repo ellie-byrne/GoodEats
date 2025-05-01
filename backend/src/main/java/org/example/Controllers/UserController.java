@@ -75,20 +75,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        Optional<User> existingUser = userRepository.findByUsername(request.getUsername());
+        String loginResult = userService.login(request.getUsername(), request.getPassword());
 
-        if (existingUser.isEmpty()) {
-            response.put("message", "Username not found");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        if (loginResult.equals("Login successful")) {
+            Optional<User> user = userRepository.findByUsername(request.getUsername());
+            response.put("message", loginResult);
+            response.put("userId", user.get().getId());
+            return ResponseEntity.ok(response);
         }
 
-        if (!existingUser.get().getPassword().equals(request.getPassword())) {
-            response.put("message", "Incorrect password");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-
-        response.put("message", "Login successful");
-        response.put("userId", existingUser.get().getId());
-        return ResponseEntity.ok(response);
+        response.put("message", loginResult);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }
