@@ -19,27 +19,27 @@ pipeline {
                 sh 'mvn -Dmaven.compiler.source=17 -Dmaven.compiler.target=17 clean package'
             }
         }
-        stage('Build Docker Image') {
+        stage('Build and Deploy Docker Image') {
+            agent {
+                docker {
+                    image 'docker:latest'
+                    args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
             steps {
                 sh '''
                 cat > Dockerfile << EOF
 FROM eclipse-temurin:17-jdk
 VOLUME /tmp
-ARG JAR_FILE=target/*.jar
-COPY \${JAR_FILE} app.jar
+COPY target/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar","--server.port=8081"]
 EOF
                 '''
                 
                 sh 'docker build -t goodeats:latest .'
-            }
-        }
-        stage('Deploy') {
-            steps {
                 sh 'docker stop goodeats || true'
                 sh 'docker rm goodeats || true'
-                
-                sh 'docker run -d --name goodeats -p 8081:8081 goodeats:latest'
+                sh 'docker run -d --name goodeats -p 8081:8081 --restart=always goodeats:latest'
             }
         }
     }
