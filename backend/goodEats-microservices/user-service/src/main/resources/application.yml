@@ -12,6 +12,8 @@ spring:
       uri: mongodb+srv://elliebyrne:GoodEats@cluster0.tp763.mongodb.net/GoodEats?retryWrites=true&w=majority&appName=Cluster0
       database: GoodEats
       auto-index-creation: true
+      connect-timeout: 30000
+      socket-timeout: 60000
 
 eureka:
   client:
