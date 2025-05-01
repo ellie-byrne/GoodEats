@@ -28,7 +28,7 @@ spring:
 
         # Static Content Route - This is crucial for your frontend files
         - id: static-content-service
-          uri: lb://USER-SERVICE  # Or whichever service hosts your static files
+          uri: lb://STATIC-CONTENT-SERVICE  # Changed from USER-SERVICE to STATIC-CONTENT-SERVICE
           predicates:
             - Path=/**  # Catch-all for static content
           filters:
@@ -41,9 +41,15 @@ eureka:
   instance:
     prefer-ip-address: true
 
-    logging:
-      level:
-        org.springframework.cloud.gateway: DEBUG
-        org.springframework.http.server.reactive: DEBUG
-        org.springframework.web.reactive: DEBUG
-        reactor.netty: DEBUG
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.netty: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: gateway,health,info
