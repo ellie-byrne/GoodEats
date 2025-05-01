@@ -259,26 +259,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const restaurantId = restaurant.id || restaurant._id;
 
-        // Fetch the user's review for this restaurant
         fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
             .then(res => res.json())
             .then(reviews => {
                 const userReview = reviews.find(r => r.userID === parseInt(userId));
-                if (!userReview) {
-                    alert("You need to leave a rating or review first to mark it as favourite.");
-                    return;
-                }
 
-                const newFavourite = !userReview.favourite;
-                fetch(`http://localhost:8080/api/reviews/${userReview.id}/favourite`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ favourite: newFavourite })
-                })
-                    .then(res => res.json())
-                    .then(() => {
-                        button.classList.toggle("active", newFavourite);
+                if (userReview) {
+                    // Toggle favourite on existing review
+                    const newFavourite = !userReview.favourite;
+
+                    return fetch(`http://localhost:8080/api/reviews/${userReview.id}/favourite`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ favourite: newFavourite })
+                    }).then(res => {
+                        if (res.ok) {
+                            button.classList.toggle("active", newFavourite);
+                        }
                     });
+                } else {
+                    // Create a new blank review with favourite = true
+                    const payload = {
+                        userID: parseInt(userId),
+                        restaurantID: parseInt(restaurantId),
+                        review: "",
+                        rating: 0,
+                        favourite: true
+                    };
+
+                    return fetch("http://localhost:8080/api/reviews", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    }).then(res => {
+                        if (res.ok) {
+                            button.classList.add("active");
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Failed to toggle favourite:", err);
+                alert("Something went wrong trying to favourite this restaurant.");
             });
     }
 
