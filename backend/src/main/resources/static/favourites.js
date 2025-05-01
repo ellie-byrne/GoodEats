@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Fetch favourites from backend
-    fetch(`http://localhost:8080/api/users/${userId}/favourites`)
+    fetch(`http://localhost:8080/api/reviews/favourites?userId=${userId}`)
         .then(res => {
             if (!res.ok) throw new Error("Failed to fetch favourites");
             return res.json();

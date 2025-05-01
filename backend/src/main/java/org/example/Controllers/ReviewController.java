@@ -1,7 +1,9 @@
 package org.example.Controllers;
 
 import org.example.Models.Review;
+import org.example.Models.Restaurant;
 import org.example.Respositories.ReviewRepository;
+import org.example.Respositories.RestaurantRepository;
 import org.example.Services.ReviewService;
 import org.example.DTOs.ReviewDTO;
 import org.example.DTOs.CreateReviewRequest;
@@ -22,10 +24,12 @@ public class ReviewController {
 
     public final ReviewService reviewService;
     public final ReviewRepository reviewRepository;
+    public final RestaurantRepository restaurantRepository;
 
-    public ReviewController(ReviewService reviewService, ReviewRepository reviewRepository) {
+    public ReviewController(ReviewService reviewService, ReviewRepository reviewRepository, RestaurantRepository restaurantRepository) {
         this.reviewService = reviewService;
         this.reviewRepository = reviewRepository;
+        this.restaurantRepository = restaurantRepository;
     }
 
     @GetMapping("/restaurants/{restaurantID}/reviews")
@@ -81,6 +85,16 @@ public class ReviewController {
             System.out.println("Update error: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/reviews/favourites")
+    public ResponseEntity<List<Restaurant>> getUserFavouriteRestaurants(@RequestParam Integer userId) {
+        List<Review> favReviews = reviewRepository.findByUserIDAndFavourite(userId, true);
+        List<Integer> restaurantIds = favReviews.stream()
+                .map(Review::getRestaurantID)
+                .collect(Collectors.toList());
+        List<Restaurant> favourites = restaurantRepository.findAllById(restaurantIds);
+        return ResponseEntity.ok(favourites);
     }
 
     @PutMapping("/reviews/{id}/favourite")
