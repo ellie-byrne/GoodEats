@@ -14,8 +14,8 @@ import java.util.Date;
 @Service
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
-    private final MongoTemplate mongoTemplate;
+    public final ReviewRepository reviewRepository;
+    public final MongoTemplate mongoTemplate;
 
     public ReviewService(ReviewRepository reviewRepository, MongoTemplate mongoTemplate) {
         this.reviewRepository = reviewRepository;
@@ -28,7 +28,7 @@ public class ReviewService {
         return reviewRepository.save(newReview);
     }
 
-    private int getNextSequence(String seqName) {
+    int getNextSequence(String seqName) {
         Query query = new Query(Criteria.where("_id").is(seqName));
         Update update = new Update().inc("seq", 1);
         Counter counter = mongoTemplate.findAndModify(query, update, org.springframework.data.mongodb.core.FindAndModifyOptions.options().returnNew(true).upsert(true), Counter.class);
@@ -48,5 +48,27 @@ public class ReviewService {
         }
 
         return reviewRepository.save(existing);
+    }
+
+    // Add Counter class that was missing
+    private static class Counter {
+        private String id;
+        private int seq;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public int getSeq() {
+            return seq;
+        }
+
+        public void setSeq(int seq) {
+            this.seq = seq;
+        }
     }
 }

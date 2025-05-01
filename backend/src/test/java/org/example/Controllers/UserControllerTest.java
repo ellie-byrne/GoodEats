@@ -21,7 +21,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserControllerTest {
@@ -85,11 +85,17 @@ public class UserControllerTest {
 
     @Test
     void signUp_MissingFields() {
-        CreateUserRequest request = new CreateUserRequest(); // all fields null
-        ResponseEntity<UserDTO> response = userController.signUp(request);
+        CreateUserRequest emptyRequest = new CreateUserRequest();
+        // Explicitly set fields to null or empty
+        emptyRequest.setUsername(null);
+        emptyRequest.setPassword(null);
+        emptyRequest.setEmail(null);
+
+        ResponseEntity<UserDTO> response = userController.signUp(emptyRequest);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNull(response.getBody());
+        verify(userService, never()).signUp(any(User.class));
     }
 
     @Test

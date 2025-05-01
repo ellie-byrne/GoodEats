@@ -1,43 +1,30 @@
 pipeline {
     agent any
-
-    environment {
-        MAVEN_HOME = tool name: 'M3', type: 'ToolLocation'
+    tools {
+        maven 'M3'
     }
-
     stages {
         stage('Checkout') {
             steps {
                 git 'https://github.com/ellie-byrne/GoodEats.git'
             }
         }
-
-        stage('Build') {
+        stage('Check Java') {
             steps {
-                script {
-                    sh "'${MAVEN_HOME}/bin/mvn' clean install"
-                }
+                sh 'java -version'
             }
         }
-
-//         stage('Test') {
-//             steps {
-//                 script {
-//                     // Run Maven tests when we do them
-//                     sh "'${MAVEN_HOME}/bin/mvn' test"
-//                 }
-//             }
-//         }
-
+        stage('Build') {
+            steps {
+                sh 'mvn -Dmaven.compiler.source=17 -Dmaven.compiler.target=17 clean install'
+            }
+        }
         stage('Deploy') {
             steps {
-                script {
-                    sh "'${MAVEN_HOME}/bin/mvn' spring-boot:run"
-                }
+                sh 'mvn org.springframework.boot:spring-boot-maven-plugin:run'
             }
         }
     }
-
     post {
         success {
             echo 'Build succeeded!'
