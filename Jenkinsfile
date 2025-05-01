@@ -16,21 +16,39 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh 'mvn -Dmaven.compiler.source=17 -Dmaven.compiler.target=17 clean install'
+                sh 'mvn -Dmaven.compiler.source=17 -Dmaven.compiler.target=17 clean package'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                cat > Dockerfile << EOF
+FROM eclipse-temurin:17-jdk
+VOLUME /tmp
+ARG JAR_FILE=target/*.jar
+COPY \${JAR_FILE} app.jar
+ENTRYPOINT ["java","-jar","/app.jar","--server.port=8081"]
+EOF
+                '''
+                
+                sh 'docker build -t goodeats:latest .'
             }
         }
         stage('Deploy') {
             steps {
-                sh 'mvn org.springframework.boot:spring-boot-maven-plugin:run -Dspring-boot.run.arguments="--server.port=8081"'
+                sh 'docker stop goodeats || true'
+                sh 'docker rm goodeats || true'
+                
+                sh 'docker run -d --name goodeats -p 8081:8081 goodeats:latest'
             }
         }
     }
     post {
         success {
-            echo 'Build succeeded!'
+            echo 'Build and deployment succeeded!'
         }
         failure {
-            echo 'Build failed.'
+            echo 'Build or deployment failed.'
         }
     }
 }
