@@ -4,11 +4,6 @@ pipeline {
         maven 'M3'
     }
     stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/ellie-byrne/GoodEats.git'
-            }
-        }
         stage('Check Java') {
             steps {
                 sh 'java -version'
