@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'mvn org.springframework.boot:spring-boot-maven-plugin:run'
+                sh 'mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"'
             }
         }
     }
