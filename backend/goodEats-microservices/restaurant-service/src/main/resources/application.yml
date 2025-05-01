@@ -1,19 +1,16 @@
-# File: src/main/resources/application.yml
 server:
   port: 8082
   servlet:
-    context-path: /api
+    context-path: /
 
 spring:
   application:
     name: restaurant-service
   data:
     mongodb:
-      uri: mongodb+srv://elliebyrne:GoodEats@cluster0.tp763.mongodb.net/GoodEats?retryWrites=true&w=majority&appName=Cluster0
+      uri: mongodb+srv://elliebyrne:GoodEats@cluster0.tp763.mongodb.net/GoodEats
       database: GoodEats
       auto-index-creation: true
-      connect-timeout: 30000
-      socket-timeout: 60000
 
 eureka:
   client:
@@ -22,9 +19,7 @@ eureka:
   instance:
     prefer-ip-address: true
 
-
-error:
-    include-message: always
-    include-binding-errors: always
-    include-stacktrace: on_param
-    include-exception: true
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.web: DEBUG
