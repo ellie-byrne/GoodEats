@@ -9,7 +9,8 @@ spring:
     name: review-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/goodeats
+      uri: mongodb+srv://elliebyrne:GoodEats@cluster0.tp763.mongodb.net/GoodEats?retryWrites=true&w=majority&appName=Cluster0
+      database: GoodEats
       auto-index-creation: true
 
 eureka:
