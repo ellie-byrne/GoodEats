@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         userReviewContainer.innerHTML = "";
 
         if (!userId) {
-            renderReviewForm(); // Not logged in
+            renderReviewForm();
         } else if (review) {
             const stars = generateStars(review.rating);
             userReviewContainer.innerHTML = `
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         } else {
-            renderReviewForm(); // Logged in, no review
+            renderReviewForm();
         }
     }
 

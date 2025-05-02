@@ -11,11 +11,9 @@ public class User {
     private String password;
     private String email;
 
-    // Default constructor
     public User() {
     }
 
-    // All-args constructor
     public User(Integer id, String username, String password, String email) {
         this.id = id;
         this.username = username;
@@ -23,7 +21,6 @@ public class User {
         this.email = email;
     }
 
-    // Getters and setters
     public Integer getId() {
         return id;
     }

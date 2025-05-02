@@ -21,7 +21,7 @@ function storeLogin(username, userId) {
     currentUsername = username;
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("username", username);
-    localStorage.setItem("userId", userId); // Store userId
+    localStorage.setItem("userId", userId);
     updateAuthDisplay();
     window.location.reload();
 }
@@ -38,7 +38,7 @@ function logout() {
 
 function toggleAuthModal() {
     const modal = document.getElementById("auth-modal");
-    if (modal) { // Check if modal exists
+    if (modal) {
         modal.style.display = modal.style.display === "block" ? "none" : "block";
     } else {
         console.error("Auth modal not found");
@@ -53,7 +53,7 @@ function switchAuthMode() {
         : `Already have an account? <a href="#" onclick="switchAuthMode()">Login</a>`;
 
     const emailInput = document.getElementById("email");
-    if (emailInput) { // Check if email input exists
+    if (emailInput) {
         emailInput.style.display = isLogin ? "none" : "block";
     }
 }
@@ -69,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateAuthDisplay();
 
-    // Check if the auth form exists before adding the event listener
     const authForm = document.getElementById("auth-form");
     if (authForm) {
         authForm.addEventListener("submit", function (e) {
@@ -111,7 +110,7 @@ function login(username, password) {
         })
         .then((data) => {
             if (data.message === "Login successful") {
-                storeLogin(username, data.userId); // Pass userId to storeLogin
+                storeLogin(username, data.userId);
                 toggleAuthModal();
             } else {
                 alert(data.message);
@@ -156,7 +155,7 @@ function signup(username, password, email) {
                 errorMessageEl.textContent = error.message;
                 errorMessageEl.classList.remove("hidden");
             } else {
-                alert(error.message); // fallback
+                alert(error.message);
             }
         });
 }

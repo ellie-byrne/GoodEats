@@ -23,7 +23,7 @@ public class RestaurantMapper {
                 dto.getBorough(),
                 dto.getStorePhoto(),
                 dto.getPostcode(),
-                null // Reviews are not part of the DTO
+                null
         );
     }
 }
