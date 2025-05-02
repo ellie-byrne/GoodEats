@@ -1,0 +1,19 @@
+{
+  "name": "goodeats-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for GoodEats restaurant review application",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --config tests/jest.config.js",
+    "test:watch": "jest --config tests/jest.config.js --watch"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.22.5",
+    "@babel/preset-env": "^7.22.5",
+    "@testing-library/jest-dom": "^5.16.5",
+    "babel-jest": "^29.5.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0"
+  }
+}
