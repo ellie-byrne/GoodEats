@@ -1,4 +1,3 @@
-// Mock localStorage
 const localStorageMock = (function() {
     let store = {};
     return {
@@ -16,7 +15,6 @@ const localStorageMock = (function() {
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-// Mock DOM elements
 document.body.innerHTML = `
   <button id="login-button">Login</button>
   <div id="username-display" style="display: none;"></div>
@@ -33,9 +31,6 @@ document.body.innerHTML = `
   </div>
 `;
 
-// Import functions to test
-// Note: In a real test, you'd import from your actual file
-// For this example, we'll define the functions inline
 const updateAuthDisplay = () => {
     const loginButton = document.getElementById("login-button");
     const usernameDisplay = document.getElementById("username-display");
@@ -88,7 +83,6 @@ const switchAuthMode = () => {
     }
 };
 
-// Global variables used in auth.js
 let isLogin = true;
 let isLoggedIn = false;
 let currentUsername = null;
@@ -101,7 +95,6 @@ describe('Auth Module', () => {
         currentUsername = null;
         localStorage.clear();
 
-        // Reset DOM
         document.getElementById("login-button").style.display = "block";
         document.getElementById("username-display").style.display = "none";
         document.getElementById("auth-modal").style.display = "none";

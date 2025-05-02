@@ -1,4 +1,3 @@
-// Mock localStorage
 const localStorageMock = (function() {
     let store = {};
     return {
@@ -16,7 +15,6 @@ const localStorageMock = (function() {
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-// Mock fetch
 global.fetch = jest.fn(() =>
     Promise.resolve({
         ok: true,
@@ -30,7 +28,6 @@ global.fetch = jest.fn(() =>
     })
 );
 
-// Mock URL params
 const mockUrlParams = new URLSearchParams("?id=1");
 Object.defineProperty(window, 'location', {
     value: {
@@ -38,11 +35,9 @@ Object.defineProperty(window, 'location', {
     }
 });
 
-// Mock URLSearchParams
 global.URLSearchParams = jest.fn(() => mockUrlParams);
 mockUrlParams.get = jest.fn(() => "1");
 
-// Mock DOM
 document.body.innerHTML = `
   <div id="restaurant-detail-container"></div>
   <div id="user-review-container"></div>
@@ -60,7 +55,6 @@ describe('Restaurant Detail Module', () => {
     });
 
     test('loads restaurant details from API', async () => {
-        // Simple implementation of loadRestaurantDetails
         const loadRestaurantDetails = async (id) => {
             try {
                 const response = await fetch(`http://localhost:8080/api/restaurants/${id}`);
@@ -82,7 +76,6 @@ describe('Restaurant Detail Module', () => {
     });
 
     test('displays restaurant details', () => {
-        // Simple implementation of displayRestaurantDetails
         const displayRestaurantDetails = (restaurant) => {
             const container = document.getElementById("restaurant-detail-container");
 
@@ -115,10 +108,8 @@ describe('Restaurant Detail Module', () => {
     });
 
     test('renders review form when logged in', () => {
-        // Set up logged in state
         localStorage.setItem("userId", "123");
 
-        // Simple implementation of renderReviewForm
         const renderReviewForm = () => {
             const container = document.getElementById("user-review-container");
 

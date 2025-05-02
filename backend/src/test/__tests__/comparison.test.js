@@ -1,4 +1,3 @@
-// Mock fetch
 global.fetch = jest.fn(() =>
     Promise.resolve({
         ok: true,
@@ -19,7 +18,6 @@ global.fetch = jest.fn(() =>
     })
 );
 
-// Mock DOM
 document.body.innerHTML = `
   <div id="restaurants-container"></div>
   <button id="compare-button" disabled></button>
@@ -74,7 +72,6 @@ describe('Comparison Module', () => {
     });
 
     test('selectRestaurant adds restaurant to selection', () => {
-        // Simple implementation of selectRestaurant
         const selectRestaurant = (restaurant, slot) => {
             const selectionContainer = document.getElementById(`restaurant${slot}-selection`);
             if (!selectionContainer) return;
@@ -89,7 +86,6 @@ describe('Comparison Module', () => {
         </div>
       `;
 
-            // Check if both restaurants are selected to enable compare button
             const restaurant1 = document.querySelector("#restaurant1-selection .selected-restaurant-card");
             const restaurant2 = document.querySelector("#restaurant2-selection .selected-restaurant-card");
 
@@ -140,7 +136,6 @@ describe('Comparison Module', () => {
 
         document.getElementById("compare-button").disabled = false;
 
-        // Simple implementation of clearComparison
         const clearComparison = () => {
             document.getElementById("restaurant1-selection").innerHTML = `
         <button class="add-restaurant-btn" data-slot="1">+ Add Restaurant</button>

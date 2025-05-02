@@ -1,4 +1,3 @@
-// Mock localStorage
 const localStorageMock = (function() {
     let store = {};
     return {
@@ -16,7 +15,6 @@ const localStorageMock = (function() {
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-// Mock fetch
 global.fetch = jest.fn(() =>
     Promise.resolve({
         ok: true,
@@ -32,7 +30,6 @@ global.fetch = jest.fn(() =>
     })
 );
 
-// Mock DOM
 document.body.innerHTML = `
   <div id="favourites-container"></div>
   <input type="checkbox" id="dark-mode-toggle" />
@@ -46,7 +43,6 @@ describe('Favourites Module', () => {
     });
 
     test('displays message when not logged in', () => {
-        // Simple implementation of checkLoginStatus
         const checkLoginStatus = () => {
             const userId = localStorage.getItem("userId");
             const favouritesContainer = document.getElementById("favourites-container");
@@ -72,10 +68,8 @@ describe('Favourites Module', () => {
     });
 
     test('fetches favourites when logged in', async () => {
-        // Set up logged in state
         localStorage.setItem("userId", "123");
 
-        // Simple implementation of loadFavourites
         const loadFavourites = async () => {
             const userId = localStorage.getItem("userId");
             const favouritesContainer = document.getElementById("favourites-container");
@@ -117,7 +111,6 @@ describe('Favourites Module', () => {
     });
 
     test('createRestaurantCard creates a card element', () => {
-        // Simple implementation of createRestaurantCard
         const createRestaurantCard = (restaurant) => {
             const card = document.createElement("div");
             card.className = "restaurant-card";

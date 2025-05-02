@@ -1,4 +1,3 @@
-// Mock fetch
 global.fetch = jest.fn(() =>
     Promise.resolve({
         ok: true,
@@ -14,7 +13,6 @@ global.fetch = jest.fn(() =>
     })
 );
 
-// Mock DOM
 document.body.innerHTML = `
   <div id="restaurants-container"></div>
   <div id="borough-filter"></div>
@@ -33,7 +31,6 @@ describe('App Module', () => {
     });
 
     test('loadRestaurants fetches data from API', async () => {
-        // Create a simple implementation of loadRestaurants
         const loadRestaurants = async () => {
             try {
                 const response = await fetch("http://localhost:8080/api/restaurants");
@@ -56,7 +53,6 @@ describe('App Module', () => {
     });
 
     test('displayRestaurants renders restaurant cards', () => {
-        // Simple implementation of displayRestaurants
         const displayRestaurants = (restaurants) => {
             const container = document.getElementById("restaurants-container");
             container.innerHTML = "";
