@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Function to load all restaurants
     function loadRestaurants() {
         restaurantsContainer.innerHTML = '<div class="loading">Loading restaurants...</div>';
-        fetch("http://localhost:5000/api/restaurants")
+        fetch("http://34.142.84.120:5000/api/restaurants")
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
             storePhoto: storePhoto,
             reviews: []
         };
-        fetch("http://localhost:5000/api/restaurants", {
+        fetch("http://34.142.84.120:5000/api/restaurants", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Function to delete a restaurant
     function deleteRestaurant(id) {
-        fetch(`http://localhost:5000/api/restaurants/${id}`, {
+        fetch(`http://34.142.84.120:5000/api/restaurants/${id}`, {
             method: "DELETE"
         })
             .then(response => {

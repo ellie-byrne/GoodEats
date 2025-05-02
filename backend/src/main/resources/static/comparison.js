@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function loadRestaurants() {
         restaurantsContainer.innerHTML = '<div class="loading">Loading restaurants...</div>';
 
-        fetch("http://localhost:5000/api/restaurants")
+        fetch("http://34.142.84.120:5000/api/restaurants")
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -221,8 +221,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const id2 = restaurant2El.dataset.id;
 
         Promise.all([
-            fetch(`http://localhost:5000/api/restaurants/${id1}/reviews`).then(res => res.json()),
-            fetch(`http://localhost:5000/api/restaurants/${id2}/reviews`).then(res => res.json())
+            fetch(`http://34.142.84.120:5000/api/restaurants/${id1}/reviews`).then(res => res.json()),
+            fetch(`http://34.142.84.120:5000/api/restaurants/${id2}/reviews`).then(res => res.json())
         ])
             .then(([reviews1, reviews2]) => {
                 const avgRating1 = calculateAverageRating(reviews1);

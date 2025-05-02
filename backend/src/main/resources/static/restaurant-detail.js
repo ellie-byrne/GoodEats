@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    fetch(`http://localhost:5000/api/restaurants/${restaurantId}`)
+    fetch(`http://34.142.84.120:5000/api/restaurants/${restaurantId}`)
         .then(res => res.json())
         .then(restaurant => {
             const name = restaurant.name || "Unnamed Restaurant";
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
             restaurantDetailTab.innerHTML = `<a href="#">${name}</a>`;
         });
 
-    fetch(`http://localhost:5000/api/restaurants/${restaurantId}/reviews`)
+    fetch(`http://34.142.84.120:5000/api/restaurants/${restaurantId}/reviews`)
         .then(res => res.json())
         .then(reviews => {
             reviewsGrid.innerHTML = "";
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         filteredReviews.forEach(review => {
-            fetch(`http://localhost:5000/api/users/${review.userID}`)
+            fetch(`http://34.142.84.120:5000/api/users/${review.userID}`)
                 .then(res => res.json())
                 .then(user => {
                     const card = document.createElement("div");
