@@ -1,18 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Restaurant data logic
     const container = document.getElementById("restaurants-container");
     const boroughFilter = document.getElementById("borough-filter");
-    const categoryFilter = document.getElementById("category-filter");
+    const typeFilter = document.getElementById("type-filter");
     const clearFiltersButton = document.getElementById("clear-filters");
     const searchInput = document.getElementById("search-input");
     const searchButton = document.getElementById("search-button");
     const darkModeToggle = document.getElementById("dark-mode-toggle");
     const recentlyViewedSection = document.getElementById("recently-viewed");
 
-    // Store all restaurants for filtering
     let allRestaurants = []
 
-    // Fetch restaurants from API
     fetch("http://34.142.84.120:5000/api/restaurants")
         .then((response) => {
             console.log("Response status:", response.status)
@@ -31,10 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 return
             }
 
-            // Store all restaurants for filtering
             allRestaurants = restaurants
 
-            // Initialise all features
             populateFilters(restaurants)
             displayRestaurants(restaurants)
             setupDarkMode()
@@ -53,9 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `
         })
 
-    // DARK MODE FUNCTIONALITY
     function setupDarkMode() {
-        // Check if previously enabled dark mode
         const darkModeEnabled = localStorage.getItem("darkModeEnabled") === "true"
 
         if (darkModeEnabled) {
@@ -74,21 +67,18 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
 
-    // FILTER FUNCTIONALITY
     function populateFilters(restaurants) {
         const boroughs = new Set()
         const categories = new Set()
 
         restaurants.forEach((restaurant) => {
-            // Handle field name inconsistencies
             const borough = restaurant.Borough || restaurant.borough || ""
-            const category = restaurant.Category || restaurant.type || ""
+            const type = restaurant.Type || restaurant.type || ""
 
             if (borough) boroughs.add(borough)
-            if (category) categories.add(category)
+            if (type) categories.add(type)
         })
 
-        // Sort values alphabetically
         const sortedBoroughs = Array.from(boroughs).sort()
         const sortedCategories = Array.from(categories).sort()
 
@@ -99,32 +89,29 @@ document.addEventListener("DOMContentLoaded", () => {
             boroughFilter.appendChild(option)
         })
 
-        sortedCategories.forEach((category) => {
+        sortedCategories.forEach((type) => {
             const option = document.createElement("option")
-            option.value = category
-            option.textContent = category
-            categoryFilter.appendChild(option)
+            option.value = type
+            option.textContent = type
+            typeFilter.appendChild(option)
         })
 
         boroughFilter.addEventListener("change", applyFilters)
-        categoryFilter.addEventListener("change", applyFilters)
+        typeFilter.addEventListener("change", applyFilters)
 
         clearFiltersButton.addEventListener("click", () => {
             boroughFilter.value = ""
-            categoryFilter.value = ""
+            typeFilter.value = ""
             searchInput.value = ""
             applyFilters()
         })
     }
 
-    // SEARCH FUNCTIONALITY
     function setupSearch() {
-        // Search when button is clicked
         searchButton.addEventListener("click", () => {
             applyFilters()
         })
 
-        // Search when Enter key is pressed
         searchInput.addEventListener("keypress", (e) => {
             if (e.key === "Enter") {
                 applyFilters()
@@ -134,33 +121,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function applyFilters() {
         const selectedBorough = boroughFilter.value
-        const selectedCategory = categoryFilter.value
+        const selectedType = typeFilter.value
         const searchQuery = searchInput.value.toLowerCase().trim()
 
         const filteredRestaurants = allRestaurants.filter((restaurant) => {
-            // Handle field name inconsistencies
             const borough = restaurant.Borough || restaurant.borough || ""
-            const category = restaurant.Category || restaurant.type || ""
+            const type = restaurant.type || ""
             const name = (restaurant.Name || restaurant.name || "").toLowerCase()
 
             const boroughMatch = !selectedBorough || borough === selectedBorough
 
-            const categoryMatch = !selectedCategory || category === selectedCategory
+            const typeMatch = !selectedType || type === selectedType
 
             const searchMatch =
                 !searchQuery ||
                 name.includes(searchQuery) ||
-                category.toLowerCase().includes(searchQuery) ||
+                type.toLowerCase().includes(searchQuery) ||
                 borough.toLowerCase().includes(searchQuery)
 
-            return boroughMatch && categoryMatch && searchMatch
+            return boroughMatch && typeMatch && searchMatch
         })
 
-        // Display filtered restaurants
         displayRestaurants(filteredRestaurants)
     }
 
-    // DISPLAY RESTAURANTS
     async function displayRestaurants(restaurants) {
         const userId = localStorage.getItem("userId");
         const favouriteIds = {};
@@ -174,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (const restaurant of restaurants) {
             const name = restaurant.Name || restaurant.name || "Unnamed Restaurant";
-            const type = restaurant.Category || restaurant.type || "Restaurant";
+            const type = restaurant.Type || restaurant.type || "Restaurant";
             const borough = restaurant.Borough || restaurant.borough || "";
             let imageUrl = restaurant.storePhoto || "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg";
             const restaurantId = restaurant.id || restaurant._id;
@@ -246,13 +230,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const favouriteButton = card.querySelector(".favourite-button");
             favouriteButton.addEventListener("click", (e) => {
-                e.stopPropagation(); // Prevent triggering the card redirect
-                toggleFavourite(restaurant, favouriteButton); // This should still be defined
+                e.stopPropagation();
+                toggleFavourite(restaurant, favouriteButton);
             });
         }
     }
 
-    // FAVOURITE FUNCTIONALITY
     function toggleFavourite(restaurant, button) {
         const userId = localStorage.getItem("userId");
         if (!userId) return alert("Login to manage favourites");
@@ -265,7 +248,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const userReview = reviews.find(r => r.userID === parseInt(userId));
 
                 if (userReview) {
-                    // Toggle favourite on existing review
                     const newFavourite = !userReview.favourite;
 
                     return fetch(`http://34.142.84.120:5000/api/reviews/${userReview.id}/favourite`, {
@@ -278,7 +260,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
                 } else {
-                    // Create a new blank review with favourite = true
                     const payload = {
                         userID: parseInt(userId),
                         restaurantID: parseInt(restaurantId),
@@ -345,7 +326,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         updateStars(starsContainer, existing.rating);
                     }
 
-                    // Allow the logged-in user to rate
                     starsContainer.querySelectorAll(".star").forEach(star => {
                         star.addEventListener("click", e => {
                             e.stopPropagation();
@@ -379,7 +359,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                     });
                 } else {
-                    // Prevent interaction for non-logged-in users
                     starsContainer.style.pointerEvents = "none";
                 }
             });
@@ -393,7 +372,6 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => msg.remove(), 2500);
     }
 
-    // RECENTLY VIEWED FUNCTIONALITY
     function setupRecentlyViewed() {
         const recentlyViewed = JSON.parse(localStorage.getItem("goodEatsRecentlyViewed")) || []
 
@@ -407,10 +385,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const recentContainer = document.querySelector(".recent-restaurants-container")
         recentContainer.innerHTML = ""
 
-        // Display up to 5 most recent restaurants
+
         recentlyViewed.slice(0, 5).forEach((restaurant) => {
             const name = restaurant.Name || restaurant.name || "Unnamed Restaurant"
-            const type = restaurant.Category || restaurant.type || "Restaurant"
+            const type = restaurant.Type || restaurant.type || "Restaurant"
             let imageUrl =
                 restaurant.storePhoto ||
                 "https://marketplace.canva.com/EAFpeiTrl4c/2/0/400w/canva-abstract-chef-cooking-restaurant-free-logo-w0RUdbkI0xE.jpg"
@@ -460,10 +438,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function addToRecentlyViewed(restaurant) {
-        // Get existing recently viewed
         const recentlyViewed = JSON.parse(localStorage.getItem("goodEatsRecentlyViewed")) || []
 
-        // Remove if already in list
         const restaurantId = restaurant.id || restaurant._id
         const existingIndex = recentlyViewed.findIndex((r) => {
             const id = r.id || r._id

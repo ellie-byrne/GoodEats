@@ -1,4 +1,3 @@
-/* Dark mode styles */
 body.dark-mode {
     background-color: #121212;
     color: #e0e0e0;
@@ -39,7 +38,6 @@ body.dark-mode .search-container input {
     border-color: #444;
 }
 
-/* Theme toggle switch */
 .theme-toggle {
     position: absolute;
     top: 20px;

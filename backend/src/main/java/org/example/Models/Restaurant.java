@@ -17,10 +17,8 @@ public class Restaurant {
     private String storePhoto;
     private String postcode;
 
-    // Default constructor
     public Restaurant() {}
 
-    // Parameterised constructor
     public Restaurant(Integer id, String name, String type, String Borough,
                       String storePhoto, String postcode,List<Review> reviews) {
         this.id = id;
@@ -31,7 +29,6 @@ public class Restaurant {
         this.postcode = postcode;
     }
 
-    // Getters and Setters
     public Integer getId() {
         return id;
     }

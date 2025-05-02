@@ -51,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 });
 
-// DARK MODE FUNCTIONALITY
 function setupDarkMode(toggle) {
     const enabled = localStorage.getItem("darkModeEnabled") === "true";
     if (enabled) {
@@ -65,7 +64,6 @@ function setupDarkMode(toggle) {
     });
 }
 
-// DISPLAY RATING FROM BACKEND
 function setupRatingCard(card, restaurantId) {
     const userId = localStorage.getItem("userId");
     const starsContainer = card.querySelector(".stars");
@@ -89,7 +87,7 @@ function setupRatingCard(card, restaurantId) {
             avgSpan.textContent = `(Average ${avg} Stars)`;
             nameEl.appendChild(avgSpan);
 
-            updateStars(starsContainer, 0); // Start fresh
+            updateStars(starsContainer, 0);
             ratingText.textContent = `(${reviews.length} rating${reviews.length !== 1 ? "s" : ""})`;
 
             if (userId) {
@@ -213,14 +211,14 @@ function createRestaurantCard(restaurant) {
 
     card.addEventListener("click", (e) => {
         if (e.target.closest(".favourite-button") || e.target.closest(".star")) {
-            return; // prevent conflict with rating/favourite click
+            return;
         }
         window.location.href = `restaurant-detail.html?id=${restaurantId}`;
     });
 
     const favButton = card.querySelector(".favourite-button");
     favButton.addEventListener("click", (e) => {
-        e.stopPropagation(); // prevent card click
+        e.stopPropagation();
         unfavouriteRestaurant(restaurant, card);
     });
 

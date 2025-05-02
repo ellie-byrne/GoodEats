@@ -2,16 +2,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const restaurantsContainer = document.getElementById("restaurants-container");
     const addRestaurantForm = document.getElementById("add-restaurant-form");
     const darkModeToggle = document.getElementById("dark-mode-toggle");
-    // Setup dark mode
     setupDarkMode();
-    // Load all restaurants
     loadRestaurants();
-    // Setup form submission
     addRestaurantForm.addEventListener("submit", (e) => {
         e.preventDefault();
         addRestaurant();
     });
-    // Function to load all restaurants
     function loadRestaurants() {
         restaurantsContainer.innerHTML = '<div class="loading">Loading restaurants...</div>';
         fetch("http://34.142.84.120:5000/api/restaurants")
@@ -60,14 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Function to display restaurants in the list
     function displayRestaurants(restaurants) {
         if (!restaurants || restaurants.length === 0) {
             restaurantsContainer.innerHTML = '<div class="no-results">No restaurant found.</div>';
             return;
         }
         restaurantsContainer.innerHTML = '';
-        // Sort restaurants by name
         restaurants.sort((a, b) => {
             const nameA = (a.name || a.Name || "").toLowerCase();
             const nameB = (b.name || b.Name || "").toLowerCase();
@@ -91,7 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
             restaurantsContainer.appendChild(restaurantItem);
-            // Add event listener to delete button
             const deleteBtn = restaurantItem.querySelector(".delete-btn");
             deleteBtn.addEventListener("click", () => {
                 if (confirm(`Are you sure you want to delete "${name}"?`)) {
@@ -101,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Function to add a new restaurant
     function addRestaurant() {
         const name = document.getElementById("name").value;
         const type = document.getElementById("type").value;
@@ -129,12 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 return response.json();
             })
             .then(data => {
-                // Clear the form
                 addRestaurantForm.reset();
-                // Show success message
 
                 alert(`Restaurant "${name}" added successfully!`);
-                // Reload the restaurant list
                 loadRestaurants();
             })
             .catch(error => {
@@ -143,7 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    // Function to delete a restaurant
     function deleteRestaurant(id) {
         fetch(`http://34.142.84.120:5000/api/restaurants/${id}`, {
             method: "DELETE"
@@ -152,9 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                // Reload the restaurant list
                 loadRestaurants();
-                // Show success message
                 alert("Restaurant deleted successfully!");
             })
             .catch(error => {
@@ -162,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert(`Error deleting restaurant: ${error.message}`);
             });
     }
-    // Function to set up dark mode
     function setupDarkMode() {
         const darkModeEnabled = localStorage.getItem("darkModeEnabled") === "true";
         if (darkModeEnabled) {
