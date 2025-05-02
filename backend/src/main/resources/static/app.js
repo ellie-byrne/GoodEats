@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let allRestaurants = []
 
     // Fetch restaurants from API
-    fetch("http://localhost:8080/api/restaurants")
+    fetch("http://localhost:5000/api/restaurants")
         .then((response) => {
             console.log("Response status:", response.status)
 
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let isFavourite = false;
             if (userId) {
-                const reviewRes = await fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`);
+                const reviewRes = await fetch(`http://localhost:5000/api/restaurants/${restaurantId}/reviews`);
                 const reviews = await reviewRes.json();
                 const userReview = reviews.find(r => r.userID === parseInt(userId));
                 isFavourite = userReview?.favourite === true;
@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                window.location.href = `http://localhost:8080/restaurant-detail.html?id=${restId}`;
+                window.location.href = `http://localhost:5000/restaurant-detail.html?id=${restId}`;
             });
 
             setupRatingCard(card, restaurantId);
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const restaurantId = restaurant.id || restaurant._id;
 
-        fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+        fetch(`http://localhost:5000/api/restaurants/${restaurantId}/reviews`)
             .then(res => res.json())
             .then(reviews => {
                 const userReview = reviews.find(r => r.userID === parseInt(userId));
@@ -268,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Toggle favourite on existing review
                     const newFavourite = !userReview.favourite;
 
-                    return fetch(`http://localhost:8080/api/reviews/${userReview.id}/favourite`, {
+                    return fetch(`http://localhost:5000/api/reviews/${userReview.id}/favourite`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ favourite: newFavourite })
@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         favourite: true
                     };
 
-                    return fetch("http://localhost:8080/api/reviews", {
+                    return fetch("http://localhost:5000/api/reviews", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(payload)
@@ -317,7 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const starsContainer = card.querySelector(".stars");
         const ratingText = card.querySelector(".rating-count");
 
-        fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+        fetch(`http://localhost:5000/api/restaurants/${restaurantId}/reviews`)
             .then(res => res.json())
             .then(reviews => {
                 const total = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);

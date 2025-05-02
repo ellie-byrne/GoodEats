@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Fetch favourites from backend
-    fetch(`http://localhost:8080/api/reviews/favourites?userId=${userId}`)
+    fetch(`http://localhost:5000/api/reviews/favourites?userId=${userId}`)
         .then(res => {
             if (!res.ok) throw new Error("Failed to fetch favourites");
             return res.json();
@@ -71,7 +71,7 @@ function setupRatingCard(card, restaurantId) {
     const starsContainer = card.querySelector(".stars");
     const ratingText = card.querySelector(".rating-count");
 
-    fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+    fetch(`http://localhost:5000/api/restaurants/${restaurantId}/reviews`)
         .then(res => res.json())
         .then(reviews => {
             const total = reviews.reduce((sum, r) => sum + (r.rating || 0), 0);
@@ -231,13 +231,13 @@ function unfavouriteRestaurant(restaurant, card) {
     const userId = localStorage.getItem("userId");
     const restaurantId = restaurant.id || restaurant._id;
 
-    fetch(`http://localhost:8080/api/restaurants/${restaurantId}/reviews`)
+    fetch(`http://localhost:5000/api/restaurants/${restaurantId}/reviews`)
         .then(res => res.json())
         .then(reviews => {
             const userReview = reviews.find(r => r.userID === parseInt(userId));
             if (!userReview) return;
 
-            fetch(`http://localhost:8080/api/reviews/${userReview.id}/favourite`, {
+            fetch(`http://localhost:5000/api/reviews/${userReview.id}/favourite`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ favourite: false })
